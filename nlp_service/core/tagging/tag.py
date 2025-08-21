@@ -24,7 +24,6 @@ def to_hashtags(phrases:List[str])->List[str]:
 
     return ranked[:12]
 
-
 def tag_document(title:str, desc:str, body:str)->Dict:
     doc_text = " ".join([title, desc, body])
     candidates = extract_candidates(title, desc, body)

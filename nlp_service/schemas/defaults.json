@@ -1,0 +1,44 @@
+{
+    "summary": {
+        "description": {
+            "max_length": 360,
+            "max_words": 120,
+            "max_sentences": 8,
+            "temperature": 0.2,
+            "prompt": "Provide a detailed and informative description",
+            "tone": "professional"
+        },
+        "outline": {
+            "max_length": 240,
+            "max_words": 80,
+            "max_sentences": 10,
+            "temperature": 0.2,
+            "prompt": "Generate a list of key points",
+            "tone": "casual"
+        },
+        "slug": {
+            "max_length": 32,
+            "max_words": 5,
+            "max_sentences": 1,
+            "temperature": 0.1,
+            "prompt": "Describe in as few words as possible",
+            "tone": "formal"
+        },
+        "subtitle": {
+            "max_length": 150,
+            "max_words": 24,
+            "max_sentences": 2,
+            "temperature": 0.2,
+            "prompt": "Supply an descriptive insightful subtitle",
+            "tone": "casual"
+        },
+        "title": {
+            "max_length": 60,
+            "max_words": 16,
+            "max_sentences": 1,
+            "temperature": 0.3,
+            "prompt": "Generate a concise and engaging title",
+            "tone": "professional"
+        }
+    }
+}
