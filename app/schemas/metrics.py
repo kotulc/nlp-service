@@ -12,22 +12,16 @@ class MetricsType(str, Enum):
     sentiment = "sentiment"
 
 class MetricsResponse(BaseModel):
-    success: bool
-    metrics: Dict[str, Any]
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    warnings: list[str] = Field(default_factory=list)
+    success: bool = Field(..., description="The success status of the metrics computation")
+    metrics: Dict[str, Any] = Field(..., description="The computed metrics results")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata related to the metrics")
+    warnings: list[str] = Field(default_factory=list, description="A List of warnings encountered during metrics computation")
 
 class MetricsRequest(BaseModel):
-    content: str
-    metric_types: List[MetricsType] = Field(
-        default_factory=lambda: [
-            MetricsType.context, 
-            MetricsType.granularity,
-            MetricsType.objectivity,
-            MetricsType.polarity,
-            MetricsType.sentiment
-        ]   
-    )
+    content: str = Field(..., description="The markdown text content to compute metrics on")
+    metric_types: List[MetricsType] = Field(None, description="Specific types of metrics to compute")
+    page_uri: str = Field(None, description="The URI of the page from which the content was extracted")
+    store_results: bool = Field(True, description="Whether to store the metrics results in the database")
     
     @model_validator(mode='after')
     def return_dict(self) -> dict:

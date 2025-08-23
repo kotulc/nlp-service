@@ -26,13 +26,15 @@ class SummaryResponse(BaseModel):
 class SummaryRequest(BaseModel):
     content: str = Field(..., description="The markdown text content to be summarized")
     summary_type: SummaryType = Field(None, description="The type of summary to generate determines supplied arguments")
-    max_length: Optional[int] = Field(None, description="The maximum length of the summary in characters")
-    max_words: Optional[int] = Field(None, description="The maximum number of words in the summary")
+    max_length: Optional[int] = Field(None, description="The maximum length of the summary in tokens")
+    min_length: Optional[int] = Field(None, description="The minimum length of the summary in tokens")
     max_sentences: Optional[int] = Field(None, description="The maximum number of sentences in the summary")
     prompt: Optional[str] = Field("Provide a detailed summary", description="The prompt to guide the summary generation")
     tone: Optional[str] = Field("professional", description="The tone of the summary, e.g., professional, casual, etc.")
     temperature: Optional[float] = Field(0.1, description="The temperature setting for the language model to control creativity")
-
+    page_uri: Optional[str] = Field(None, description="The URI of the page from which the content was extracted")
+    store_results: bool = Field(True, description="Whether to store the summary results in the database")
+    
     @model_validator(mode='after')
     def apply_type_defaults(self) -> dict:
         """Apply default values based on the specified summary type"""

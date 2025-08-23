@@ -1,85 +1,155 @@
-import re
 import numpy
 import spacy
 import yake
 
-from typing import List, Dict
-
-from sentence_transformers import SentenceTransformer, util
-from sklearn.cluster import KMeans
+from relevance import maximal_marginal_relevance as mmr
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from transformers import pipeline
+from keybert._mmr import mmr
+from keybert import KeyBERT
 
 
 # Define module level variables
-nlp = spacy.load("en_core_web_sm")
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+nlp = spacy.load("en_core_web_lg")
 
-def maximal_marginal_relevance(doc_emb, cand_embs, candidates, lambda_=0.6, top_n=20):
-    selected, selected_idx = [], []
-    sim_to_doc = util.cos_sim(cand_embs, doc_emb).cpu().numpy().ravel()
-    sim_matrix = util.cos_sim(cand_embs, cand_embs).cpu().numpy()
-    idxs = list(range(len(candidates)))
 
-    while len(selected) < min(top_n, len(candidates)):
-        if not selected:
-            i = int(numpy.argmax(sim_to_doc))
-            selected.append(candidates[i]); selected_idx.append(i); idxs.remove(i)
-            continue
+# Example usage and testing function
+def demo_tagger():
+    """Test the tagging functionality with different parameters."""
 
-        mmr_scores = []
-        for i in idxs:
-            diversity = max(sim_matrix[i, selected_idx]) if selected_idx else 0
-            score = lambda_ * sim_to_doc[i] - (1 - lambda_) * diversity
-            mmr_scores.append((score, i))
-            
-        _, best_i = max(mmr_scores)
-        selected.append(candidates[best_i]); selected_idx.append(best_i); idxs.remove(best_i)
+    sample_text = """
+    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
+    natural intelligence displayed by animals including humans. Leading AI textbooks define 
+    the field as the study of "intelligent agents": any system that perceives its environment 
+    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
+    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
+    functions that humans associate with the human mind, such as "learning" and "problem solving".
+    As machines become increasingly capable, tasks considered to require "intelligence" are 
+    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
+    optical character recognition is frequently excluded from things considered to be AI, 
+    having become a routine technology.
+    """
     
-    return selected
+    print("=== Basic Tagging ===")
+    key_bert = KeyBERT(model='all-MiniLM-L6-v2')
+    bert_phrases = key_bert.extract_keywords(sample_text, keyphrase_ngram_range=(1, 1), stop_words='english', top_n=10, use_mmr=False)
+    bert_phrases = [phrase for phrase, score in bert_phrases]
+    print("\nKeyBERT Keywords:", bert_phrases)
 
-def extract_candidates(title:str, desc:str, body:str, top_k:int=40)->List[str]:
-    text = " ".join([title, desc, body])
-    doc = nlp(text)
-
-    # noun chunks + entities
-    phrases = {chunk.text.strip() for chunk in doc.noun_chunks if len(chunk.text) > 2}
-    phrases |= {ent.text.strip() for ent in doc.ents if len(ent.text) > 2}
+    # Spacy noun chunks + entities
+    doc = nlp(sample_text)
+    spacy_entities = list({entity.text.strip() for entity in doc.ents})
+    print("\nEntities:", spacy_entities)
 
     # YAKE keywords (adds recall)
-    kw = yake.KeywordExtractor(n=3, top=top_k).extract_keywords(text)
-    phrases |= {k for k, _ in kw}
+    yake_phrases = yake.KeywordExtractor(n=1, top=10).extract_keywords(sample_text)
+    yake_phrases = [phrase for phrase, score in yake_phrases]
+    print("\nYAKE keywords:", yake_phrases)
 
-    # boost title/desc
-    phrases |= {t.strip() for t in nlp(title).noun_chunks}
-    phrases |= {t.strip() for t in nlp(desc).noun_chunks}
+    candidates = []
+    for keys in (bert_phrases, yake_phrases, spacy_entities):
+        candidates.extend([k.lower() for k in keys])
+    candidates = list(set(candidates))
+    print("\nCandidate Keywords:", candidates)
 
-    # normalize & filter
-    clean = []
-    for p in phrases:
-        p = re.sub(r"\s+", " ", p).strip()
-        if 3 <= len(p) <= 60 and not p.isnumeric():
-            clean.append(p)
+    
+    def rank_words_semantic(text_body, word_list, model_name='all-MiniLM-L6-v2', top_n=10):
+        """Rank words by semantic similarity to text using embeddings"""
+        model = SentenceTransformer(model_name)
+        
+        # Create embeddings
+        text_embedding = model.encode([text_body])
+        word_embeddings = model.encode(word_list)
+        
+        # Calculate cosine similarity
+        similarities = cosine_similarity(text_embedding, word_embeddings)[0]
+        
+        # Create word-score pairs
+        word_scores = list(zip(word_list, similarities))
+        
+        return sorted(word_scores, key=lambda x: x[1], reverse=True)[:top_n]
 
-    return list(set(clean))
 
-def extract_topics(candidates:List[str], doc_text:str, k:int=5)->List[Dict]:
-    doc_emb = embedder.encode([doc_text], convert_to_tensor=True)
-    cand_embs = embedder.encode(candidates, convert_to_tensor=True)
+    ranked_keywords = rank_words_semantic(sample_text, candidates)
+    print("\nRanked by Semantic Similarity:", ranked_keywords)
 
-    # pick diverse, relevant subset first
-    shortlist = mmr(doc_emb, cand_embs, candidates, top_n=min(30, len(candidates)))
-    if len(shortlist) < k: k = max(1, len(shortlist))
-    X = embedder.encode(shortlist)
-    k = min(k, len(shortlist))
-    km = KMeans(n_clusters=k, n_init="auto", random_state=0).fit(X)
+    # model = SentenceTransformer("all-MiniLM-L6-v2")     # standard SBERT model
+    # doc_embedding  = model.encode([sample_text], normalize_embeddings=True)
+    # candidate_embedding = model.encode(candidates, normalize_embeddings=True)
+    # selected = mmr(doc_embedding, candidate_embedding, candidates, top_n=8, diversity=0.6)
+    # print("\nMMR Keywords:", selected)
 
-    topics = []
-    for cluster_id in range(k):
-        members = [shortlist[i] for i, c in enumerate(km.labels_) if c == cluster_id]
-        if not members: continue
-        # label = best member closest to cluster centroid
-        centroid = km.cluster_centers_[cluster_id]
-        sims = util.cos_sim(embedder.encode(members), centroid).cpu().numpy().ravel()
-        label = members[int(numpy.argmax(sims))]
-        topics.append({"topic": label, "keywords": sorted(set(members))})
+    generator = pipeline("text2text-generation", model="google/flan-t5-base")
+    result = generator(f"In as few words as possible summarize the following text: {sample_text}")
+    print("\nGoogle summarize:", result[0]['generated_text']) 
 
-    return topics
+    result = generator(f"List key concepts of the following text: {sample_text}")
+    print("\nGoogle concepts:", result[0]['generated_text']) 
+
+    result = generator(f"Apply a label to the following text: {sample_text}")
+    print("\nGoogle label:", result[0]['generated_text']) 
+
+    result = generator(f"In as few words as possible, list tangentially related concepts:\n\nText: {sample_text}\n\nRelated Topics:")
+    print("\nGoogle theme:", result[0]['generated_text']) 
+
+
+    import torch
+    import transformers
+
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+
+    # Specify the model you want to use
+    model_id = "microsoft/Phi-4-mini-instruct"
+
+    # Load the tokenizer and model
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        device_map="auto"
+    )
+
+    # Use the model for text generation
+    generator = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
+    sequences = generator(
+        f"In as few words as possible, list tangentially related concepts:\n\nText: {sample_text}\n\nRelated Topics:",
+        do_sample=True, max_new_tokens=32, temperature=0.7
+    )
+    print("\nPhi4:", sequences[0]["generated_text"])
+
+    # sequences = generator(
+    #     f"List key concepts of the following text: {sample_text}",
+    #     do_sample=True, max_new_tokens=32, temperature=0.7
+    # )
+    # print("\nPhi4:", sequences[0]["generated_text"])
+
+    # sequences = generator(
+    #     f"What is the theme of the following text: {sample_text}",
+    #     do_sample=True, max_new_tokens=32, temperature=0.7
+    # )
+    # print("\nPhi4:", sequences[0]["generated_text"])
+
+
+    # Specify the model you want to use
+    model_id = "google/gemma-3-1b-it"
+
+    # Load the tokenizer and model
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        device_map="auto"
+    )
+
+    # Use the model for text generation
+    generator = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
+    sequences = generator(
+        f"In as few words as possible, list tangentially related concepts:\n\nText: {sample_text}\n\nRelated Topics:",
+        do_sample=True, max_new_tokens=32, temperature=0.7
+    )
+    print("\Gemma3:", sequences[0]["generated_text"])
+
+
+if __name__ == "__main__":
+    demo_tagger()

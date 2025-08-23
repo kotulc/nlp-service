@@ -10,29 +10,29 @@ from typing import Optional
 # - "allenai/led-base-16384" (for very long documents)
 # - "distilbart-cnn-12-6" (smaller, faster, less accurate)
 
-# Initialize the model and tokenizer
-model_name = "google/flan-t5-large" 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+# # Initialize the model and tokenizer
+# model_name = "google/pegasus-xsum"
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
+# model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-# Create the summarization pipeline
-summarizer = pipeline(
-    "summarization",
-    model=model,
-    tokenizer=tokenizer,
-    device=0 if torch.cuda.is_available() else -1
-)
+# # Create the summarization pipeline
+# summarizer = pipeline(
+#     "summarization",
+#     model=model,
+#     tokenizer=tokenizer,
+#     device=0 if torch.cuda.is_available() else -1
+# )
 
-# Tone-specific prefixes to guide the model
-TONE_PREFIXES = {
-    'neutral': '',
-    'formal': 'In formal language, ',
-    'casual': 'In simple terms, ',
-    'technical': 'From a technical perspective, ',
-    'friendly': 'In a friendly manner, ',
-    'academic': 'From an academic standpoint, ',
-    'business': 'For business purposes, ',
-    'professional': 'In a professional tone, '
+# Tone-specific instructions for T5/FLAN-T5 models - more direct for summarization
+TONE_INSTRUCTIONS = {
+    'neutral': 'Summarize:',
+    'formal': 'Provide a formal summary:',
+    'casual': 'Explain this simply:',
+    'technical': 'Provide a technical overview:',
+    'friendly': 'Summarize this in a friendly way:',
+    'academic': 'Provide an academic summary:',
+    'business': 'Provide a business summary:',
+    'professional': 'Provide a professional summary:'
 }
 
 # Buffer tokens to account for special tokens and prevent truncation
@@ -44,7 +44,7 @@ def summarize_text(
     prompt: Optional[str] = "Summarize the following text",
     tone: str = "neutral",
     temperature: float = 0.5,
-    max_length: int = 240,
+    max_length: int = 150,
     min_length: int = 16
     ) -> str:
     """
@@ -70,9 +70,14 @@ def summarize_text(
         raise ValueError("Temperature must be between 0.0 and 1.0")
     
     try:
-        # Build the full input text with tone and prompt
-        tone_prefix = TONE_PREFIXES.get(tone.lower(), '')
-        full_prompt = f"{tone_prefix}{prompt}\n\nText to summarize:\n{content}"
+        # For T5, use simple and direct formatting
+        if tone.lower() in TONE_INSTRUCTIONS:
+            instruction = TONE_INSTRUCTIONS[tone.lower()]
+        else:
+            instruction = "Summarize:"
+            
+        # T5 format: "instruction content" (space, not newline)
+        full_prompt = f"{instruction} {content.strip()}"
         
         # Calculate maximum safe input tokens (different models use different config names)
         if hasattr(model.config, 'max_position_embeddings'):
@@ -97,26 +102,25 @@ def summarize_text(
         if len(input_tokens) > max_input_tokens:
             print(f"Input too long ({len(input_tokens)} tokens), truncating to {max_input_tokens}")
             
-            # Create the prompt header (everything before the content)
-            prompt_header = f"{tone_prefix}{prompt}\n\nText to summarize:\n"
-            prompt_header_tokens = tokenizer.encode(prompt_header, truncation=False)
+            # For truncation, separate instruction from content
+            instruction_tokens = tokenizer.encode(f"{instruction} ", truncation=False)
             
-            # Check if prompt header itself is too long
-            if len(prompt_header_tokens) >= max_input_tokens:
-                raise ValueError(f"Prompt header too long ({len(prompt_header_tokens)} tokens). Maximum: {max_input_tokens}")
+            # Check if instruction itself is too long
+            if len(instruction_tokens) >= max_input_tokens:
+                raise ValueError(f"Instruction too long ({len(instruction_tokens)} tokens). Maximum: {max_input_tokens}")
             
             # Calculate available space for content
-            available_content_tokens = max_input_tokens - len(prompt_header_tokens)
+            available_content_tokens = max_input_tokens - len(instruction_tokens)
             
-            # Tokenize just the content and truncate it
-            content_tokens = tokenizer.encode(content, truncation=False)
+            # Tokenize and truncate content
+            content_tokens = tokenizer.encode(content.strip(), truncation=False)
             truncated_content_tokens = content_tokens[:available_content_tokens]
             
-            # Combine prompt header + truncated content
-            final_tokens = prompt_header_tokens + truncated_content_tokens
+            # Combine instruction + truncated content  
+            final_tokens = instruction_tokens + truncated_content_tokens
             final_input = tokenizer.decode(final_tokens, skip_special_tokens=True)
             
-            print(f"Using {len(prompt_header_tokens)} prompt + {len(truncated_content_tokens)} content = {len(final_tokens)} total tokens")
+            print(f"Using {len(instruction_tokens)} instruction + {len(truncated_content_tokens)} content = {len(final_tokens)} total tokens")
         else:
             # No truncation needed
             final_input = full_prompt
@@ -140,8 +144,60 @@ def summarize_text(
         return f"Error during summarization: {str(e)}"
 
 
+from transformers import AutoTokenizer, BitsAndBytesConfig, Gemma3ForCausalLM
+from huggingface_hub import login
+
+import torch
+print(torch.cuda.is_available())
+
+
+login("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")
+model_id = "google/gemma-3-1b-it"
+quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+model = Gemma3ForCausalLM.from_pretrained(model_id, quantization_config=quantization_config).eval()
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+
+def summarize_gemma(
+        content: str, 
+        prompt: str="Summarize the following:", 
+        tone: str="friendly", 
+        temperature: float = 0.7
+    ) -> str:
+    """Generate a summary using the Gemma model with specified tone and temperature."""
+
+    messages = [
+        [
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": f"You are a helpful assistant, reply with a {tone} tone."},]
+            },
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": f"{prompt} {content}"}]
+            },
+        ],
+    ]
+
+    print(messages)
+
+    inputs = tokenizer.apply_chat_template(
+        messages,
+        add_generation_prompt=True,
+        tokenize=True,
+        return_dict=True,
+        return_tensors="pt",
+    ).to(model.device).to(torch.bfloat16)
+
+    with torch.inference_mode():
+        outputs = model.generate(**inputs, max_new_tokens=32)
+
+    outputs = tokenizer.batch_decode(outputs)
+    return outputs
+
+
 # Example usage and testing function
-def test_summarizer():
+def demo_summarizer():
     """Test the summarization function with different parameters."""
 
     sample_text = """
@@ -158,22 +214,25 @@ def test_summarizer():
     """
     
     print("=== Basic Summary ===")
-    result = summarize_text(sample_text)
+    result = summarize_gemma(sample_text)
     print(result)
     
     print("\n=== With Custom Prompt ===")
-    result = summarize_text(
-        sample_text, prompt="Summarize this for a high school student"
-    )
+    result = summarize_gemma(sample_text, prompt="Summarize this for a high school student")
     print(result)
     
     print("\n=== Formal Tone ===")
-    result = summarize_text(sample_text, tone="formal")
+    result = summarize_gemma(sample_text, tone="formal")
     print(result)
     
     print("\n=== Casual Tone with High Temperature ===")
-    result = summarize_text(sample_text, tone="casual", temperature=0.9)
+    result = summarize_gemma(sample_text, tone="casual", temperature=0.9)
+    print(result)
+    
+    print("\n=== Technical Tone ===")
+    result = summarize_gemma(sample_text, tone="technical", temperature=0.7)
     print(result)
 
+
 if __name__ == "__main__":
-    test_summarizer()
+    demo_summarizer()
