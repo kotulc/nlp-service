@@ -7,11 +7,12 @@ from typing import Optional, Dict, Any
 
 
 # Load default settings for summary types
-summary_defaults = json.load(open(Path(__file__).parent.parent / "configs/defaults.json"))
+summary_defaults = json.load(open(Path(__file__).parent.parent / "configs/summary.json"))
 
 # Define supported default summary types found in defaults.json
 class SummaryType(str, Enum):
     description = "description"
+    list = "list"
     outline = "outline"
     slug = "slug"
     subtitle = "subtitle"
@@ -25,13 +26,12 @@ class SummaryResponse(BaseModel):
 
 class SummaryRequest(BaseModel):
     content: str = Field(..., description="The markdown text content to be summarized")
-    summary_type: SummaryType = Field(None, description="The type of summary to generate determines supplied arguments")
-    max_length: Optional[int] = Field(None, description="The maximum length of the summary in tokens")
-    min_length: Optional[int] = Field(None, description="The minimum length of the summary in tokens")
-    max_sentences: Optional[int] = Field(None, description="The maximum number of sentences in the summary")
-    prompt: Optional[str] = Field("Provide a detailed summary", description="The prompt to guide the summary generation")
-    tone: Optional[str] = Field("professional", description="The tone of the summary, e.g., professional, casual, etc.")
-    temperature: Optional[float] = Field(0.1, description="The temperature setting for the language model to control creativity")
+    prompt: Optional[str] = Field(None, description="The prompt to guide the summary generation")
+    tone: Optional[str] = Field(None, "professional", description="The tone of the summary, e.g., professional, casual, etc.")
+    summary_type: SummaryType = Field(None, description="The type of summary to generate; determines default arguments")
+    temperature: Optional[float] = Field(None, description="The temperature setting for the language model to control creativity")
+    max_new_tokens: Optional[int] = Field(None, description="The maximum length of the generated summary in tokens")
+    min_new_tokens: Optional[int] = Field(None, description="The minimum length of the generated summary in tokens")
     page_uri: Optional[str] = Field(None, description="The URI of the page from which the content was extracted")
     store_results: bool = Field(True, description="Whether to store the summary results in the database")
     

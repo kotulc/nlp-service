@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..schemas.summary import SummaryResponse, SummaryRequest, SummaryType
-from ..core.summary import summarize
+from ..core.summary import generate
 
 
 # Define the router for summary-related endpoints
@@ -9,29 +9,34 @@ router = APIRouter(prefix="/summary", tags=tags)
 
 @router.post("/", response_model=SummaryResponse)
 async def get_summary(request: SummaryRequest):
-    return summarize(request)
+    return generate(request)
 
 @router.post("/description/", response_model=SummaryResponse)
 async def get_summary(request: SummaryRequest):
     request.summary_type = "description"
-    return summarize(request)
+    return generate(request)
+
+@router.post("/list/", response_model=SummaryResponse)
+async def get_summary(request: SummaryRequest):
+    request.summary_type = "list"
+    return generate(request)
 
 @router.post("/outline/", response_model=SummaryResponse)
 async def get_summary(request: SummaryRequest):
     request.summary_type = "outline"
-    return summarize(request)
+    return generate(request)
 
 @router.post("/slug/", response_model=SummaryResponse)
 async def get_summary(request: SummaryRequest):
     request.summary_type = "slug"
-    return summarize(request)
+    return generate(request)
 
 @router.post("/subtitle/", response_model=SummaryResponse)
 async def get_summary(request: SummaryRequest):
     request.summary_type = "subtitle"
-    return summarize(request)
+    return generate(request)
 
 @router.post("/title/", response_model=SummaryResponse)
 async def get_summary(request: SummaryRequest):
     request.summary_type = "title"
-    return summarize(request)
+    return generate(request)

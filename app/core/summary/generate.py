@@ -1,0 +1,144 @@
+import json
+import pathlib
+import re
+import torch
+import transformers
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+
+# Define some fallback defaults in case the local config is missing
+DEFAULT_MODEL = "google/gemma-3-1b-it"
+DEFAULT_TEMPLATE = "{prompt}:\n\nText: {content}\n\n{delimiter}"
+
+# Tone-specific instructions for T5/FLAN-T5 models
+TONE_INSTRUCTIONS = {
+    'neutral': 'Summarize:',
+    'formal': 'Provide a formal summary:',
+    'casual': 'Explain this simply:',
+    'technical': 'Provide a technical overview:',
+    'friendly': 'Summarize this in a friendly way:',
+    'academic': 'Provide an academic summary:',
+    'business': 'Provide a business summary:',
+    'professional': 'Provide a professional summary:'
+}
+
+# Load the local transformers configurations
+transformers_config = {}
+config_path = pathlib.Path(__file__).parent.parent.parent / 'configs/transformers.json'
+if config_path.exists():
+    with open(config_path, 'r') as config_file:
+        transformers_config = json.load(config_file)
+        assert isinstance(transformers_config, dict)
+
+# Get the system default model and template used for text generation
+model_id = transformers_config.get("models", {}).get("default", DEFAULT_MODEL)
+prompt_template = transformers_config.get("templates", {}).get("default", DEFAULT_TEMPLATE)
+generation_defaults = transformers_config.get("generation", {})
+
+# Load the tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16, device_map="auto")
+generator = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
+
+
+def generate_text(content: str, prompt: str, delimiter: str="<|Output:|>", **kwargs) -> list[str]:
+    """Generate a content summary string using a specified model and prompt"""
+    # Overload default arguments with user supplied arguments
+    user_configs = generation_defaults.copy()
+    user_configs.update(**kwargs)
+
+    # Apply the prompt template and generate the summary
+    text_prompt = prompt_template.format(prompt=prompt, content=content, delimiter=delimiter)
+    sequences = generator(text_prompt, do_sample=True, **user_configs)
+
+    # For each returned text sequence extract the generated content
+    text_sequences = []
+    for sequence in sequences:
+        result = sequence["generated_text"]
+        text_sequences.append(result.split(delimiter)[-1])
+
+    # Split the result to extract the generated summary after the prompt delimiter
+    return text_sequences
+
+
+def generate_summary(
+        content: str, 
+        prompt: str=None, 
+        tone: str=None,
+        summary_type: str=None,
+        page_uri: str=None,
+        store_results: bool=False,
+        **kwargs
+    ) -> list[str]:
+    """Generate a summary with the provided prompt and parse the model output accordingly"""
+    # Add a conversational tone to the supplied prompt if requested
+    if not prompt: prompt = "Provide a short summary of the following text"
+    if tone: prompt += f" in a {tone} tone"
+
+    # Apply the prompt template and generate the summary text
+    if summary_type:
+        # Use the supplied summary type as the generated text output delimeter
+        summaries = generate_text(content, prompt, delimiter=f"<|{summary_type}|>:", **kwargs)
+    else:
+        # Use the default delimiter
+        summaries = generate_text(content, prompt, **kwargs)
+    
+    # Parse and format the generated text based on known special characters:
+    if summary_type and summary_type.lower() in ("outline", "list", "points"):
+        # Split results on a common list delimiters
+        regex_pattern = r'[.,:;<>|\n*-]|\*\*|--|---'
+    else:
+        # Simply attempt to split results into sentences or phrases
+        regex_pattern = r'[.,:;<>|\n]'
+
+    # Return a list of extracted summary items
+    parsed_list = []
+    for summary_string in summaries:
+        if len(summary_string) >= 2:
+            substrings = re.split(regex_pattern, summary_string)
+            parsed_list.extend([s.strip() for s in substrings if s and re.search(r'[a-zA-Z]', s)])
+
+    return parsed_list
+
+
+# Example usage and testing function
+def demo_summarizer():
+    """Test the summarization function with different parameters."""
+
+    sample_text = """
+    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
+    natural intelligence displayed by animals including humans. Leading AI textbooks define 
+    the field as the study of "intelligent agents": any system that perceives its environment 
+    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
+    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
+    functions that humans associate with the human mind, such as "learning" and "problem solving".
+    As machines become increasingly capable, tasks considered to require "intelligence" are 
+    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
+    optical character recognition is frequently excluded from things considered to be AI, 
+    having become a routine technology.
+    """
+    
+    generate_kwargs = dict(max_new_tokens=32, temperature=0.7)
+
+    sample_kwargs = [
+        dict(content=sample_text, prompt="In 5 words or less, generate several concise and engaging titles", summary_type="titles"),
+        dict(content=sample_text, prompt="In as few words as possible, list several tangentially related concepts", summary_type="list"),
+        dict(content=sample_text, prompt="In as few words as possible, outline the following text", summary_type="outline"),
+        dict(content=sample_text, prompt="Provide a list of 2-5 word summaries of the following text", summary_type="list"),
+        dict(content=sample_text, prompt="Briefly summarize the following text", summary_type="summary", tone='academic')
+    ]
+
+    print("\n== Basic Summary ===")
+    print(f"\nModel: {model_id}")
+    result = generate_summary(sample_text, **generate_kwargs)
+    print(result)
+
+    print("\n=== With Custom Prompt ===")
+    for kwargs in sample_kwargs:
+        result = generate_summary(**kwargs, **generate_kwargs)
+        print(kwargs.get("prompt"), result)
+
+
+if __name__ == "__main__":
+    demo_summarizer()
