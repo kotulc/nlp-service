@@ -145,13 +145,10 @@ def summarize_text(
 
 
 from transformers import AutoTokenizer, BitsAndBytesConfig, Gemma3ForCausalLM
-from huggingface_hub import login
 
 import torch
 print(torch.cuda.is_available())
 
-
-login("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")
 model_id = "google/gemma-3-1b-it"
 quantization_config = BitsAndBytesConfig(load_in_8bit=True)
 model = Gemma3ForCausalLM.from_pretrained(model_id, quantization_config=quantization_config).eval()
