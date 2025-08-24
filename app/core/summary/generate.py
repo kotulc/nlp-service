@@ -86,7 +86,7 @@ def generate_summary(
     
     # Parse and format the generated text based on known special characters:
     if summary_type and summary_type.lower() in ("outline", "list", "points"):
-        # Split results on a common list delimiters
+        # Split results on common list delimiters
         regex_pattern = r'[.,:;<>|\n*-]|\*\*|--|---'
     else:
         # Simply attempt to split results into sentences or phrases
@@ -104,7 +104,7 @@ def generate_summary(
 
 # Example usage and testing function
 def demo_summarizer():
-    """Test the summarization function with different parameters."""
+    """Test the summarization function with different parameters"""
 
     sample_text = """
     Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 

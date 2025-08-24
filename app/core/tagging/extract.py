@@ -2,30 +2,86 @@ import spacy
 import yake
 
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 from keybert import KeyBERT
+
+from app.core.summary.generate import generate_summary
+from app.core.tagging.similarity import maximal_marginal_relevance, semantic_similarity
 
 
 # Define module level variables
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 key_bert = KeyBERT('all-MiniLM-L6-v2')
 spacy_nlp = spacy.load("en_core_web_lg")
-yake_extractor = yake.KeywordExtractor(lan="en", n=1, dedupLim=0.9, top=20, features=None)
+yake_extractor = yake.KeywordExtractor(
+    lan="en", 
+    n=1, 
+    dedupLim=0.9, 
+    dedupFunc="seqm", 
+    top=20, 
+    features=None
+)
 
 
-def semantic_similarity(text_body, word_list, top_n=10):
-    """Rank words by semantic similarity to text using embeddings"""
-    # Create embeddings
-    text_embedding = embedding_model.encode([text_body])
-    word_embeddings = embedding_model.encode(word_list)
+def extract_entities(content: str, top_n: int=5) -> list:
+    """Extract entities and return the top_n results"""
+    # Pass through spacy pipeline
+    doc = spacy_nlp(content)
     
-    # Calculate cosine similarity
-    similarities = cosine_similarity(text_embedding, word_embeddings)[0]
-    
-    # Create word-score pairs
-    word_scores = list(zip(word_list, similarities))
-    
-    return sorted(word_scores, key=lambda x: x[1], reverse=True)[:top_n]
+    return list({entity.text.strip() for entity in doc.ents})[:top_n]
+
+
+def extract_keywords(content: str, top_n: int=10) -> list:
+    """Extract entities and return the top_n most relevant results"""
+    # Bert keywords
+    bert_keywords = key_bert.extract_keywords(
+        content, 
+        keyphrase_ngram_range=(1, 1), 
+        stop_words='english', 
+        top_n=top_n, 
+        use_mmr=False
+    )
+    bert_keywords = [phrase for phrase, score in bert_keywords]
+   
+    # Yake keywords (adds recall)
+    yake_keywords = yake_extractor.extract_keywords(content)
+    yake_keywords = [phrase for phrase, score in yake_keywords]
+
+    # Combine all keywords and compare source relevance with cosine similiarty
+    candidates = []
+    for keys in (bert_keywords, yake_keywords):
+        candidates.extend([k.lower() for k in keys])
+
+    candidates = list(set(candidates))
+    ranked_keywords = semantic_similarity(content, candidates, top_n=top_n)
+
+    return ranked_keywords
+
+
+def extract_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
+    """Use language models to generate lists of related concepts and topics"""
+    summary_kwargs = dict(content=content, summary_type="list", max_new_tokens=32, temperature=0.7, num_return_sequences=1)
+
+    # Generate related topics, themes, and concepts
+    topics = generate_summary(prompt="With as few words as possible, list several related trending topics from the following text", **summary_kwargs)
+    themes = generate_summary(prompt="With as few words as possible, list high level ideas and themes of the following text", **summary_kwargs)
+    related = generate_summary(prompt="With as few words as possible, list several tangentially related concepts to the following text", **summary_kwargs)
+
+    # NOTE: Keep this for reference for now...
+    # First remove all punctuation and numerics
+    # clean_tags = []
+    # for tag in topics + themes + related:
+    #     clean_tokens = [token.text.lower() for token in spacy_nlp(tag) if not token.is_punct and not token.is_stop and token.is_alpha]
+    #     clean_tags.append(" ".join(clean_tokens))
+    # clean_tags = list(set(clean_tags))
+
+    # MMR 'should' filter out dirty tags, skip the above cleaning step
+    clean_tags = topics + themes + related
+
+    # Filter generated tag by length and return the top_n similarity results    
+    candidates = [s for s in clean_tags if len(s.split()) >= min_length and len(s.split()) <= max_length]
+    maximal_tags = maximal_marginal_relevance(content, candidates, top_n=top_n)
+
+    return maximal_tags
 
 
 # Example usage and testing function
@@ -45,29 +101,18 @@ def demo_tagger():
     having become a routine technology.
     """
     
-    print("=== Basic Tagging ===")
-    bert_phrases = key_bert.extract_keywords(sample_text, keyphrase_ngram_range=(1, 1), stop_words='english', top_n=10, use_mmr=False)
-    bert_phrases = [phrase for phrase, score in bert_phrases]
-    print("\nKeyBERT Keywords:", bert_phrases)
+    print("\n=== Basic Tagging ===")
+    result = extract_entities(sample_text, top_n=5)
+    print("\nExtracted entities:", result)
 
-    # Spacy entity detection
-    doc = spacy_nlp(sample_text)
-    spacy_entities = list({entity.text.strip() for entity in doc.ents})
-    print("\nEntities:", spacy_entities)
+    result = extract_keywords(sample_text, top_n=8)
+    print("\nExtracted keywords:", result)
 
-    # YAKE keywords (adds recall)
-    yake_phrases = yake_extractor.extract_keywords(sample_text)
-    yake_phrases = [phrase for phrase, score in yake_phrases]
-    print("\nYAKE keywords:", yake_phrases)
+    result = extract_tags(sample_text, min_length=1, max_length=3, top_n=5)
+    print("\nExtracted tags (min ngram=1):", result)
 
-    candidates = []
-    for keys in (bert_phrases, yake_phrases, spacy_entities):
-        candidates.extend([k.lower() for k in keys])
-    candidates = list(set(candidates))
-    print("\nCandidate Keywords:", candidates)
-
-    ranked_keywords = semantic_similarity(sample_text, candidates)
-    print("\nRanked by Semantic Similarity:", ranked_keywords)
+    result = extract_tags(sample_text, min_length=2, max_length=5, top_n=5)
+    print("\nExtracted tags (min ngram=2):", result)
 
 
 if __name__ == "__main__":
