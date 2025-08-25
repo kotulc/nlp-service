@@ -7,7 +7,6 @@ from keybert import KeyBERT
 from app.core.summary.generate import generate_summary
 from app.core.tagging.similarity import maximal_marginal_relevance, semantic_similarity
 
-
 # Define module level variables
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 key_bert = KeyBERT('all-MiniLM-L6-v2')

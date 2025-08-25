@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from ..schemas.summary import SummaryResponse, SummaryRequest, SummaryType
-from ..core.summary import generate
+from app.schemas.summary import SummaryResponse, SummaryRequest, SummaryType
+from app.core.summary import generate
 
 
 # Define the router for summary-related endpoints

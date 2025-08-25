@@ -3,7 +3,6 @@ import numpy
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
 # Define module level variables
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -32,6 +31,7 @@ def maximal_marginal_relevance(content, candidates, sim_lambda=0.5, top_n=10) ->
             max_similarity = max([cosine_similarity(embedding.reshape(1, -1), emb.reshape(1, -1)).flatten() for _, emb, _ in selected])
             mmr_scores.append(sim_lambda * similarity - (1 - sim_lambda) * max_similarity)
         
+        # Select the next best candidate and remove it from the pool
         selected_index = numpy.argmax(mmr_scores)
         selected.append(available_candidates[selected_index])
         available_candidates.pop(selected_index)

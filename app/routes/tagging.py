@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from ..schemas.tagging import TaggingResponse, TaggingRequest, TaggingType
-from ..core.tagging import tag
+from app.schemas.tagging import TaggingResponse, TaggingRequest, TaggingType
+from app.core.tagging import tag
 
 
 # Define the router for tagging-related endpoints

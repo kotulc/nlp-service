@@ -6,7 +6,6 @@ import transformers
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-
 # Define some fallback defaults in case the local config is missing
 DEFAULT_MODEL = "google/gemma-3-1b-it"
 DEFAULT_TEMPLATE = "{prompt}:\n\nText: {content}\n\n{delimiter}"

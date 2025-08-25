@@ -1,52 +1,45 @@
 import spacy
 
+from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from app.core.metrics.metrics import classify_content
-
-# Define sentiment class constant
-SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
 
 # Define module-level variables
 vader_analyzer = SentimentIntensityAnalyzer()
 spacy_nlp = spacy.load("en_core_web_lg")
 
 
-def content_sentiment(content: str) -> dict:
-    """Compute bart and vader sentiment scores for the supplied string"""
+def content_polarity(content: str) -> dict:
+    """Compute blob and vader polarity for the supplied string"""
     doc = spacy_nlp(content)
 
-    # Get bart and vader scores in an equivalent format (including precision)
-    bart_scores = classify_content(doc.text, SENTIMENT_CLASSES)
-    bart_scores = [round(score, 3) for score in bart_scores]
-    vader_scores = vader_analyzer.polarity_scores(doc.text)
-    vader_scores = [vader_scores[k] for k in ('neg', 'neu', 'pos')]
+    # For both sets of scores: -1 most extreme negative, +1 most extreme positive
+    blob_score = TextBlob(doc.text).sentiment.polarity
+    vader_score = vader_analyzer.polarity_scores(doc.text)['compound']
 
-    return bart_scores, vader_scores
+    return round(blob_score, 4), round(vader_score, 4)
 
 
-def sentence_sentiment(content: str) -> tuple[list]:
-    """Compute bart and vader sentiment scores for each sentence in the supplied string"""
+def sentence_polarity(content: str) -> list:
+    """Compute blob and vader polarity for each sentence in the supplied string"""
     doc = spacy_nlp(content)
 
-    sentence_list, bart_list, vader_list = [], [], []
+    sentence_list, blob_list, vader_list = [], [], []
     for sentence in doc.sents:
-        # Get bart and vader scores in an equivalent format (including precision)
+        # For both sets of scores: -1 most extreme negative, +1 most extreme positive
         sentence_list.append(sentence.text)
 
-        bart_scores = classify_content(sentence.text, SENTIMENT_CLASSES)
-        bart_scores = [round(score, 3) for score in bart_scores]
-        bart_list.append(bart_scores)
+        blob_score = TextBlob(sentence.text).sentiment.polarity
+        blob_list.append(round(blob_score, 4))
 
-        vader_scores = vader_analyzer.polarity_scores(sentence.text)
-        vader_scores = [vader_scores[k] for k in ('neg', 'neu', 'pos')]
-        vader_list.append(vader_scores)
+        vader_score = vader_analyzer.polarity_scores(sentence.text)['compound']
+        vader_list.append(round(vader_score, 4))
 
-    return sentence_list, bart_list, vader_list
+    return sentence_list, blob_list, vader_list
 
 
 # Example usage and testing function
-def demo_sentiment():
-    """Test the sentiment functions with different parameters"""
+def demo_polarity():
+    """Test the polarity functions with different parameters"""
 
     sample_text = """
     Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
@@ -66,21 +59,24 @@ def demo_sentiment():
     neutral_text = "AI may be a devistating force, it could possibly mean the end of the world"
     positive_text = "AI will bring about a utopian revolution, it will be very beneficial"
 
-    print("\n== Document Sentiment ===")
+    print("\n== Document Polarity ===")
 
     for label, content in zip(content_labels, (negative_text, neutral_text, positive_text)):
         print(f"\nText: {label}")
-        blob, vader = content_sentiment(content)
-        print(f"Content Sentiment:", blob, vader)
         
-    print("\n== Sentence Sentiment ===")
+        blob, vader = content_polarity(content)
+        print(f"Content Polarity:", blob, vader)
+
+        
+    print("\n== Sentence Polarity ===")
     print(f"\nText: sample_text")
-    sentences, bart, vader = sentence_sentiment(sample_text)
-    print(f"\nSentence Sentiment:")
-    for s, b, v in zip(sentences, bart, vader):
+    sentences, blob, vader = sentence_polarity(sample_text)
+    # Format document sentence in a more readable way
+    print(f"Sentence Polarity:")
+    for s, b, v in zip(sentences, blob, vader):
         clean_text = "'" + " ".join(s.strip().split())[:60] + "...':"
         print(f"{clean_text:<64}", b, v)
 
 
 if __name__ == "__main__":
-    demo_sentiment()
+    demo_polarity()

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routes import metrics, summary, tagging, workflow
+from app.routes import metrics, summary, tagging, workflow
 
 
 # Initialize FastAPI app
