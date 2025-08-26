@@ -7,7 +7,7 @@ from typing import Optional, Dict, Any
 
 
 # Load default settings for summary types
-summary_defaults = json.load(open(Path(__file__).parent.parent / "configs/summary.json"))
+summary_defaults = json.load(open(Path(__file__).parent.parent / "config/summary.json"))
 
 # Define supported default summary types found in defaults.json
 class SummaryType(str, Enum):

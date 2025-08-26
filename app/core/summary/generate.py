@@ -10,21 +10,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 DEFAULT_MODEL = "google/gemma-3-1b-it"
 DEFAULT_TEMPLATE = "{prompt}:\n\nText: {content}\n\n{delimiter}"
 
-# Tone-specific instructions for T5/FLAN-T5 models
-TONE_INSTRUCTIONS = {
-    'neutral': 'Summarize:',
-    'formal': 'Provide a formal summary:',
-    'casual': 'Explain this simply:',
-    'technical': 'Provide a technical overview:',
-    'friendly': 'Summarize this in a friendly way:',
-    'academic': 'Provide an academic summary:',
-    'business': 'Provide a business summary:',
-    'professional': 'Provide a professional summary:'
-}
-
 # Load the local transformers configurations
 transformers_config = {}
-config_path = pathlib.Path(__file__).parent.parent.parent / 'configs/transformers.json'
+config_path = pathlib.Path(__file__).parent.parent.parent / 'config/transformers.json'
 if config_path.exists():
     with open(config_path, 'r') as config_file:
         transformers_config = json.load(config_file)
@@ -44,12 +32,12 @@ generator = transformers.pipeline("text-generation", model=model, tokenizer=toke
 def generate_text(content: str, prompt: str, delimiter: str="<|Output:|>", **kwargs) -> list[str]:
     """Generate a content summary string using a specified model and prompt"""
     # Overload default arguments with user supplied arguments
-    user_configs = generation_defaults.copy()
-    user_configs.update(**kwargs)
+    user_config = generation_defaults.copy()
+    user_config.update(**kwargs)
 
     # Apply the prompt template and generate the summary
     text_prompt = prompt_template.format(prompt=prompt, content=content, delimiter=delimiter)
-    sequences = generator(text_prompt, do_sample=True, **user_configs)
+    sequences = generator(text_prompt, do_sample=True, **user_config)
 
     # For each returned text sequence extract the generated content
     text_sequences = []

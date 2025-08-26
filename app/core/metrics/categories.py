@@ -5,7 +5,8 @@ from transformers import pipeline
 
 # Define distribution labels
 # Define labels on a scale of very subjective to very objective
-DICTION_LABELS = ['formal', 'concrete', 'informal', 'colloquial', 'abstract', 'poetic']
+DICTION_LABELS = ['formal', 'concrete', 'informal', 'colloquial', 'literary', 'poetic', 'abstract']
+GENRE_LABELS = ['romance', 'drama', 'suspense', 'historical', 'non-fiction', 'adventure', 'sci-fi', 'fantasy']
 STYLE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative', 'experimental']
 TONE_LABELS = ['dogmatic', 'subjective', 'neutral', 'objective', 'impartial']
 
@@ -23,15 +24,22 @@ def classify_content(content: str, labels: list) -> list:
 
 
 def score_diction(content: str) -> tuple[(list, str)]:
-    """Return the zero-shot classification scores for granularity (detail)"""
-    # Zero-shot granularity score (ideally this uses a fine-tuned a model)
+    """Return the zero-shot classification scores for diction"""
+    # Zero-shot diction score (ideally this uses a fine-tuned a model)
     result = classify_content(content, DICTION_LABELS)
     return [round(float(v), 4) for v in result], DICTION_LABELS[numpy.argmax(result)]
 
 
+def score_genre(content: str) -> tuple[(list, str)]:
+    """Return the zero-shot classification scores for genre"""
+    # Zero-shot genre score (ideally this uses a fine-tuned a model)
+    result = classify_content(content, GENRE_LABELS)
+    return [round(float(v), 4) for v in result], GENRE_LABELS[numpy.argmax(result)]
+
+
 def score_style(content: str) -> tuple[(list, str)]:
-    """Return the zero-shot classification scores for granularity (detail)"""
-    # Zero-shot granularity score (ideally this uses a fine-tuned a model)
+    """Return the zero-shot classification scores for style"""
+    # Zero-shot style score (ideally this uses a fine-tuned a model)
     result = classify_content(content, STYLE_LABELS)
     return [round(float(v), 4) for v in result], STYLE_LABELS[numpy.argmax(result)]
 
@@ -86,6 +94,10 @@ def demo_distribution():
         # Diction score and label
         scores, label = score_diction(content)
         print("Diction score:", scores, "Label:", label)
+
+        # Genre score and label
+        scores, label = score_genre(content)
+        print("Genre score:", scores, "Label:", label)
 
         # Style score and label
         scores, label = score_style(content)

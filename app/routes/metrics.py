@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.schemas.metrics import MetricsResponse, MetricsRequest, MetricsType
-from app.core.metrics import distribution, polarity, sentiment
+from app.core.metrics import categories, polarity, sentiment
 
 
 # Define the router for metrics-related endpoints
@@ -13,7 +13,7 @@ async def get_context(request: MetricsRequest):
 
 @router.post("/context/", response_model=MetricsResponse)
 async def get_context(request: MetricsRequest):
-    return distribution(request)
+    return categories(request)
 
 @router.post("/granularity/", response_model=MetricsResponse)
 async def get_granularity(request: MetricsRequest):
