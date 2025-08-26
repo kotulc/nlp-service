@@ -66,7 +66,6 @@ def demo_polarity():
         
         blob, vader = content_polarity(content)
         print(f"Content Polarity:", blob, vader)
-
         
     print("\n== Sentence Polarity ===")
     print(f"\nText: sample_text")

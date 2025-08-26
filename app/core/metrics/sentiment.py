@@ -1,7 +1,7 @@
 import spacy
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from app.core.metrics.metrics import classify_content
+from app.core.metrics.distribution import classify_content
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
@@ -76,7 +76,7 @@ def demo_sentiment():
     print("\n== Sentence Sentiment ===")
     print(f"\nText: sample_text")
     sentences, bart, vader = sentence_sentiment(sample_text)
-    print(f"\nSentence Sentiment:")
+    print(f"Sentence Sentiment:")
     for s, b, v in zip(sentences, bart, vader):
         clean_text = "'" + " ".join(s.strip().split())[:60] + "...':"
         print(f"{clean_text:<64}", b, v)

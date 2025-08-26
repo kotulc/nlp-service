@@ -65,15 +65,7 @@ def extract_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=
     themes = generate_summary(prompt="With as few words as possible, list high level ideas and themes of the following text", **summary_kwargs)
     related = generate_summary(prompt="With as few words as possible, list several tangentially related concepts to the following text", **summary_kwargs)
 
-    # NOTE: Keep this for reference for now...
-    # First remove all punctuation and numerics
-    # clean_tags = []
-    # for tag in topics + themes + related:
-    #     clean_tokens = [token.text.lower() for token in spacy_nlp(tag) if not token.is_punct and not token.is_stop and token.is_alpha]
-    #     clean_tags.append(" ".join(clean_tokens))
-    # clean_tags = list(set(clean_tags))
-
-    # MMR 'should' filter out dirty tags, skip the above cleaning step
+    # MMR 'should' filter out dirty tags, skip token cleaning step
     clean_tags = topics + themes + related
 
     # Filter generated tag by length and return the top_n similarity results    
