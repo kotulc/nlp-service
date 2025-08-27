@@ -11,37 +11,27 @@ TITLE_PROMPTS = [
 
 def get_titles(content: str, top_n: int=5) -> tuple[list, str]:
     """Extract entities and return the top_n results"""
-    # Generate multiple candidate labels
+    # Define common generation kwargs
+    generation_kwargs = dict(format="list", max_new_tokens=top_n * 4, temperature=0.7)
+
     candidates = []
     for prompt in TITLE_PROMPTS:
         # Generate candidate tiles for each prompt
-        candidates += generate_summary(
-            content=content, 
-            prompt=prompt, 
-            format="list", 
-            max_new_tokens=top_n * 4, 
-            temperature=0.7
-        )
+        candidates += generate_summary(content=content, prompt=prompt, **generation_kwargs)
 
     # Combine all generated titles into a new content string
     title_content = " ".join(candidates)
 
     # Add some more variety detached from the source content
     prompt = "Rephrase the following terms into a list of short pithy titles"
-    candidates += generate_summary(
-        content=title_content, 
-        prompt=prompt, 
-        format="list", 
-        max_new_tokens=top_n * 4,
-        temperature=0.7
-    )
+    candidates += generate_summary(content=title_content, prompt=prompt, **generation_kwargs)
     candidates = list({s.lower() for s in candidates})
 
     # Select by similarity among generated titles
     # NOTE: This *should* filter out unrelated model banter
-    selected = semantic_similarity(title_content, candidates, top_n=top_n)
+    selected_titles = semantic_similarity(title_content, candidates, top_n=top_n)
 
-    return selected
+    return selected_titles
 
 
 # Example usage and testing function
@@ -61,7 +51,7 @@ def demo_extractor():
     having become a routine technology.
     """
     
-    print("\n=== Generate Formatted Summaries ===")
+    print("\n=== Formatted Generation ===")
     result = get_titles(sample_text, top_n=5)
     print("\nGenerated Titles:", result)
 
