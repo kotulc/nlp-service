@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.schemas.summary import SummaryResponse, SummaryRequest, SummaryType
 from app.core.summary import generate
 
-
+# Note: DB update on response (optional: store_response, page_uri) 
 # Define the router for summary-related endpoints
 tags = [summary_type.value for summary_type in SummaryType]
 router = APIRouter(prefix="/summary", tags=tags)

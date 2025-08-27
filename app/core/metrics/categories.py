@@ -3,8 +3,8 @@ import numpy
 from textblob import TextBlob
 from transformers import pipeline
 
-# Define distribution labels
-# Define labels on a scale of very subjective to very objective
+# Define elements of literary analysis
+# Attempt to define labels on a scale of very low to very high in a given linguistic quality
 DICTION_LABELS = ['formal', 'concrete', 'informal', 'colloquial', 'literary', 'poetic', 'abstract']
 GENRE_LABELS = ['romance', 'drama', 'suspense', 'historical', 'non-fiction', 'adventure', 'sci-fi', 'fantasy']
 STYLE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative', 'experimental']
@@ -14,9 +14,10 @@ TONE_LABELS = ['dogmatic', 'subjective', 'neutral', 'objective', 'impartial']
 zero_shot_pipe = pipeline(model='facebook/bart-large-mnli')
 
 
-def classify_content(content: str, labels: list) -> list:
+def classify_content(content: str, labels: list, multi_label=False) -> list:
     """Return the zero-shot classification scores in the order of the supplied labels"""
-    result = zero_shot_pipe(content, candidate_labels=labels)
+    # NOTE: If more than one label can be correct, set multi_label=True
+    result = zero_shot_pipe(content, candidate_labels=labels, multi_label=multi_label)
     scores = {label: score for label, score in zip(result['labels'], result['scores'])} 
 
     # Return scores in the order the labels were provided
@@ -66,7 +67,7 @@ def score_tone(content: str) -> tuple[(list, str)]:
 
 
 # Example usage and testing function
-def demo_distribution():
+def demo_categories():
     """Test the summarization function with different parameters"""
 
     sample_text = """
@@ -87,7 +88,7 @@ def demo_distribution():
     neutral_text = "AI may be a devistating force, it could cause great harm if we don't guide it properly"
     positive_text = "AI will bring about a utopian revolution, it will be very beneficial"
 
-    print("\n== Document Metrics ===")
+    print("\n== Document Analysis ===")
     for content_label, content in zip(content_labels, (negative_text, neutral_text, positive_text, sample_text)):
         print(f"\nText: {content_label}")
         
@@ -109,4 +110,4 @@ def demo_distribution():
 
 
 if __name__ == "__main__":
-    demo_distribution()
+    demo_categories()

@@ -29,7 +29,7 @@ model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat1
 generator = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 
-def generate_text(content: str, prompt: str, delimiter: str="<|Output:|>", **kwargs) -> list[str]:
+def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:
     """Generate a content summary string using a specified model and prompt"""
     # Overload default arguments with user supplied arguments
     user_config = generation_defaults.copy()
@@ -37,60 +37,48 @@ def generate_text(content: str, prompt: str, delimiter: str="<|Output:|>", **kwa
 
     # Apply the prompt template and generate the summary
     text_prompt = prompt_template.format(prompt=prompt, content=content, delimiter=delimiter)
-    sequences = generator(text_prompt, do_sample=True, **user_config)
+    sequences = generator(text_prompt, do_sample=True, return_full_text=False, **user_config)
 
     # For each returned text sequence extract the generated content
-    text_sequences = []
-    for sequence in sequences:
-        result = sequence["generated_text"]
-        text_sequences.append(result.split(delimiter)[-1])
+    text_sequences = [sequence["generated_text"] for sequence in sequences]
 
     # Split the result to extract the generated summary after the prompt delimiter
     return text_sequences
 
 
-def generate_summary(
-        content: str, 
-        prompt: str=None, 
-        tone: str=None,
-        summary_type: str=None,
-        page_uri: str=None,
-        store_results: bool=False,
-        **kwargs
-    ) -> list[str]:
+def generate_summary(content: str, prompt: str, format: str=None, tone: str=None, **kwargs) -> list[str]:
     """Generate a summary with the provided prompt and parse the model output accordingly"""
     # Add a conversational tone to the supplied prompt if requested
-    if not prompt: prompt = "Provide a short summary of the following text"
     if tone: prompt += f" in a {tone} tone"
 
     # Apply the prompt template and generate the summary text
-    if summary_type:
+    if format:
         # Use the supplied summary type as the generated text output delimeter
-        summaries = generate_text(content, prompt, delimiter=f"<|{summary_type}|>:", **kwargs)
+        response = generate_response(content, prompt, delimiter=f"<|{format}|>:", **kwargs)
     else:
         # Use the default delimiter
-        summaries = generate_text(content, prompt, **kwargs)
+        response = generate_response(content, prompt, **kwargs)
     
     # Parse and format the generated text based on known special characters:
-    if summary_type and summary_type.lower() in ("outline", "list", "points"):
+    if format and format.lower() in ("outline", "list", "points"):
         # Split results on common list delimiters
-        regex_pattern = r'[.,:;<>|\n*-]|\*\*|--|---'
+        regex_pattern = r"[.,:;<>`|\n*-]|\*\*|--|---"
     else:
         # Simply attempt to split results into sentences or phrases
-        regex_pattern = r'[.,:;<>|\n]'
+        regex_pattern = r"[.,:;<>`|\n]"
 
     # Return a list of extracted summary items
     parsed_list = []
-    for summary_string in summaries:
-        if len(summary_string) >= 2:
-            substrings = re.split(regex_pattern, summary_string)
+    for response_string in response:
+        if len(response_string) >= 2:
+            substrings = re.split(regex_pattern, response_string)
             parsed_list.extend([s.strip() for s in substrings if s and re.search(r'[a-zA-Z]', s)])
 
-    return parsed_list
+    return parsed_list 
 
 
 # Example usage and testing function
-def demo_summarizer():
+def demo_generator():
     """Test the summarization function with different parameters"""
 
     sample_text = """
@@ -106,19 +94,19 @@ def demo_summarizer():
     having become a routine technology.
     """
     
+    # Define generation parameters, prompt, and related arguments
     generate_kwargs = dict(max_new_tokens=32, temperature=0.7)
-
     sample_kwargs = [
-        dict(content=sample_text, prompt="In 5 words or less, generate several concise and engaging titles", summary_type="titles"),
-        dict(content=sample_text, prompt="In as few words as possible, list several tangentially related concepts", summary_type="list"),
-        dict(content=sample_text, prompt="In as few words as possible, outline the following text", summary_type="outline"),
-        dict(content=sample_text, prompt="Provide a list of 2-5 word summaries of the following text", summary_type="list"),
-        dict(content=sample_text, prompt="Briefly summarize the following text", summary_type="summary", tone='academic')
+        dict(content=sample_text, prompt="In 5 words or less, generate several concise and engaging titles", format="titles"),
+        dict(content=sample_text, prompt="In as few words as possible, list several tangentially related concepts", format="list"),
+        dict(content=sample_text, prompt="In as few words as possible, outline the following text", format="outline"),
+        dict(content=sample_text, prompt="Provide a list of 2-5 word summaries of the following text", format="list"),
+        dict(content=sample_text, prompt="Briefly summarize the following text", format="summary", tone='academic')
     ]
 
     print("\n== Basic Summary ===")
-    print(f"\nModel: {model_id}")
-    result = generate_summary(sample_text, **generate_kwargs)
+    print(f"Model: {model_id}")
+    result = generate_summary(sample_text, "Provide a short summary of the following text", **generate_kwargs)
     print(result)
 
     print("\n=== With Custom Prompt ===")
@@ -128,4 +116,4 @@ def demo_summarizer():
 
 
 if __name__ == "__main__":
-    demo_summarizer()
+    demo_generator()

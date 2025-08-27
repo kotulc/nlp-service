@@ -5,7 +5,14 @@ from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
 
 from app.core.summary.generate import generate_summary
-from app.core.tagging.similarity import maximal_marginal_relevance, semantic_similarity
+from app.core.tags.similarity import maximal_marginal_relevance, semantic_similarity
+
+# Define module level constants
+TAG_PROMPTS = [
+    "With as few words as possible, list several related trending topics from the following text",
+    "With as few words as possible, list high level ideas and themes of the following text",
+    "With as few words as possible, list several tangentially related concepts to the following text",
+]
 
 # Define module level variables
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -23,10 +30,8 @@ yake_extractor = yake.KeywordExtractor(
 
 def extract_entities(content: str, top_n: int=5) -> list:
     """Extract entities and return the top_n results"""
-    # Pass through spacy pipeline
-    doc = spacy_nlp(content)
-    
-    return list({entity.text.strip() for entity in doc.ents})[:top_n]
+    # Extract entity tags from spacy pipeline
+    return list({entity.text.strip() for entity in spacy_nlp(content).ents})[:top_n]
 
 
 def extract_keywords(content: str, top_n: int=10) -> list:
@@ -58,18 +63,19 @@ def extract_keywords(content: str, top_n: int=10) -> list:
 
 def extract_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
     """Use language models to generate lists of related concepts and topics"""
-    summary_kwargs = dict(content=content, summary_type="list", max_new_tokens=32, temperature=0.7, num_return_sequences=1)
-
     # Generate related topics, themes, and concepts
-    topics = generate_summary(prompt="With as few words as possible, list several related trending topics from the following text", **summary_kwargs)
-    themes = generate_summary(prompt="With as few words as possible, list high level ideas and themes of the following text", **summary_kwargs)
-    related = generate_summary(prompt="With as few words as possible, list several tangentially related concepts to the following text", **summary_kwargs)
-
-    # MMR 'should' filter out dirty tags, skip token cleaning step
-    clean_tags = topics + themes + related
+    tag_strings = []
+    for prompt in TAG_PROMPTS:
+        tag_strings += generate_summary(
+            content=content,
+            prompt=prompt,
+            format="list", 
+            max_new_tokens=top_n * 4, 
+            temperature=0.7
+        )
 
     # Filter generated tag by length and return the top_n similarity results    
-    candidates = [s for s in clean_tags if len(s.split()) >= min_length and len(s.split()) <= max_length]
+    candidates = [s for s in tag_strings if len(s.split()) >= min_length and len(s.split()) <= max_length]
     maximal_tags = maximal_marginal_relevance(content, candidates, top_n=top_n)
 
     return maximal_tags

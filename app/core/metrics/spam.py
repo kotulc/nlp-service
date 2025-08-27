@@ -3,7 +3,6 @@ import torch
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-
 # Get pre-trained toxicity and spam detection models
 tokenizer = AutoTokenizer.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
 spam_classifier = AutoModelForSequenceClassification.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
