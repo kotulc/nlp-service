@@ -1,8 +1,15 @@
+import numpy
 import spacy
 
 from app.core.metrics.categories import classify_content
 from app.core.summary.generate import generate_summary
 from app.core.tags.similarity import semantic_similarity
+
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Define module level variables
+embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Define module-level constants
 HEADING_PROMPTS = {
@@ -19,17 +26,11 @@ HEADING_PROMPTS = {
         "Rephrase the following terms into a list of short pithy subtitles"
     ],
     "description": [
-        "Generate many short conise single-setence descriptions of the following text",
-        "List several brief explanations of the following text",
+        "Generate many short concise single-sentence descriptions of the following text",
+        "List several brief, terse explanations of the following text",
         "List multiple varied summaries of the following text",
-        "Rephrase the following terms into a list of concise pithy summaries"
+        "Rephrase the following terms into a list of concise summaries"
     ],
-    "outline": [
-        "In 6 words or less explain the main point of the following text",
-        "In as few words as possible, list the key points of the following text",
-        "In as few words as possible, describe the idea of the following text",
-        "Rephrase the following terms into a list of concise very short descriptions"
-    ]
 }
 
 # Define module-level variables
@@ -64,26 +65,51 @@ def get_headings(content: str, heading="title", top_n: int=5) -> tuple[list, str
     return selected_titles
 
 
-# NOTE: Perform map-reduce summarization over content sentences
-def get_outline(content: str, top_n=3) -> tuple[list, str]:
+def get_outline(content: str, similarity_threshold=0.7, top_n=3) -> tuple[list, str]:
     """Perform map-reduce sentence summarization to generate an outline"""
-    sentence_headings = []
-    for sentence in spacy_nlp(content).sents:
-        # Initialize a list of blank headings to ensure that top_n values exist
-        headings = get_headings(sentence.text, heading="outline", top_n=top_n)
-        sentence_headings.append(headings)
+    # Split the supplied content string into individual sentences
+    content_sections = [s.text for s in spacy_nlp(content).sents]
 
-    generation_kwargs = dict(format="list", max_new_tokens=top_n * 4, temperature=0.7)
-    candidates = []
-    prompt = "Select the minimum set of non-overalpping key points from the following:"    
-    # Combine all sentence headings into a fluid continous outline
-    for i in range(top_n):
-        heading_strings = " ".join([headings[i] for headings in sentence_headings if len(headings) > i])
-        candidates += generate_summary(content=heading_strings, prompt=prompt, **generation_kwargs)
+    if len(content_sections) == 0:
+        raise ValueError("Supplied content string must contain one or more sentences.")
 
-    selected_outline = semantic_similarity(content, candidates, top_n=top_n)
+    # Compare similarity among all sentences
+    content_embedding = embedding_model.encode(content_sections)
+    similarities = cosine_similarity(content_embedding)
+    
+    # TODO: Test other methods of reducing sections
+    # Combine sentences with similarity above a given threshold
+    content_reduced = [content_sections[0]]
+    i, j = 0, 1
+    while j < similarities.shape[0]:
+        if similarities[i, j] >= similarity_threshold:
+            content_reduced[i] += " " + content_sections[j]
+        else:
+            content_reduced.append(content_sections[j])
+            i = j
+        j += 1
 
-    return selected_outline
+    # Generate candidate section descriptors
+    generation_kwargs = dict(format="list", max_new_tokens=32, temperature=0.7)
+
+    section_descriptions = []
+    for section in content_reduced:
+        # Generate candidate summaries for each prompt
+        candidates = []
+        for prompt in HEADING_PROMPTS["description"][:-1]:
+            candidates += generate_summary(content=section, prompt=prompt, **generation_kwargs)
+        
+        # Compute section embeddings
+        content_embedding = embedding_model.encode([section])
+        candidate_embeddings = embedding_model.encode(candidates)
+
+        # TODO: Select top_n best candidates sorted by similarity
+        # Select the candidate with the highest similarity
+        scores = cosine_similarity(content_embedding, candidate_embeddings).flatten()
+        selected_candidate = candidates[numpy.argmax(scores)]
+        section_descriptions.append(selected_candidate)
+
+    return section_descriptions
 
 
 # Example usage and testing function
@@ -104,11 +130,12 @@ def demo_headings():
     """
     
     print("\n=== Generate Headings ===")
-    for heading in HEADING_PROMPTS.keys():
-        result = get_headings(sample_text, heading=heading, top_n=5)
-        print(f"\nGenerated {heading}s:", result)
+    # for heading in HEADING_PROMPTS.keys():
+    #     result = get_headings(sample_text, heading=heading, top_n=5)
+    #     print(f"\nGenerated {heading}s:", result)
 
     print("\n=== Generate Outline ===")
+    result = get_outline(sample_text)
 
 
 if __name__ == "__main__":
