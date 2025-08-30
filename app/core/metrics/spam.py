@@ -1,3 +1,4 @@
+import numpy
 import torch
 
 from transformers import pipeline
@@ -20,16 +21,7 @@ def score_spam(content: str) -> list:
         logits = outputs.logits
 
     # Apply softmax to get probabilities
-    probabilities = torch.softmax(logits, dim=1)
-
-    # Get predicted labels
-    predictions = torch.argmax(probabilities, dim=1)
-
-    # Map labels to class names
-    label_map = {0: "Not Spam", 1: "Spam"}
-    for prediction in predictions:
-        print(f"Text: {content}\nPrediction: {label_map[prediction.item()]}")
-    
+    probabilities = torch.softmax(logits, dim=1)    
     return [round(float(score), 4) for score in probabilities.flatten()]
 
 
@@ -71,9 +63,12 @@ def demo_spam():
 
     print("\n== Spam Classification ===")
     for label, content in zip(content_labels, content_strings):
-        print(f"\nText: {label}")
-
+        # Get predicted labels and map labels to class names
+        label_map = {0: "Not Spam", 1: "Spam"}
         spam_scores = score_spam(content)
+        prediction = int(numpy.argmax(spam_scores))
+        print(f"\n{label.capitalize()} text: {content}\nPrediction: {label_map[prediction]}")
+        
         print("Spam scores:", spam_scores)
         
         toxicity_score = score_toxicity(content)

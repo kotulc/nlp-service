@@ -69,7 +69,9 @@ def demo_polarity():
         
     print("\n== Sentence Polarity ===")
     print(f"\nText: sample_text")
+    # Textblob and vader polarity scores range from [-1.0, 1.0] with 1 being the most positive
     sentences, blob, vader = sentence_polarity(sample_text)
+    
     # Format document sentence in a more readable way
     print(f"Sentence Polarity:")
     for s, b, v in zip(sentences, blob, vader):

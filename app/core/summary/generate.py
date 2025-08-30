@@ -62,10 +62,10 @@ def generate_summary(content: str, prompt: str, format: str=None, tone: str=None
     # Parse and format the generated text based on known special characters:
     if format and format.lower() in ("outline", "list", "points"):
         # Split results on common list delimiters
-        regex_pattern = r"[.,:;<>`|\n*-]|\*\*|--|---"
+        regex_pattern = r"[.,:;<>\[\]`|\n*-]|\*\*|--|---"
     else:
         # Simply attempt to split results into sentences or phrases
-        regex_pattern = r"[.,:;<>`|\n]"
+        regex_pattern = r"[.,:;<>\[\]`|\n]"
 
     # Return a list of extracted summary items
     parsed_list = []
