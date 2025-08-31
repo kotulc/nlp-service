@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.tags import TaggingResponse, TaggingRequest, TaggingType
+from app.models.tags import TaggingResponse, TaggingRequest, TaggingType
 from app.core.tags import tag
 
 

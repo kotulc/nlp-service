@@ -70,7 +70,7 @@ def extract_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=
             content=content,
             prompt=prompt,
             format="list", 
-            max_new_tokens=top_n * 4, 
+            max_new_tokens=top_n * 12, 
             temperature=0.7
         )
 

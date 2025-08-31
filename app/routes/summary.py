@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.summary import SummaryResponse, SummaryRequest, SummaryType
+from app.models.summary import SummaryResponse, SummaryRequest, SummaryType
 from app.core.summary import generate
 
 # Note: DB update on response (optional: store_response, page_uri) 

@@ -3,13 +3,16 @@ from pydantic import BaseModel, Field, model_validator
 from typing import Dict, Any, List
 
 
-# Define supported default metrics types
+# Define supported metrics types
 class MetricsType(str, Enum):
-    context = "context"
-    granularity = "granularity"
-    objectivity = "objectivity"
-    polarity = "polarity"
+    diction = "diction"     # Vocabulary, formality and complexity of text
+    genre = "genre"         # The overarching literary category
+    style = "style"         # The writing style or voice
+    tone = "tone"           # The expressed subjectivity (from dogmatic to impartial)
+    polarity = "polarity"   # 
     sentiment = "sentiment"
+    spam = "spam"
+    toxicity = "toxicity"
 
 class MetricsResponse(BaseModel):
     success: bool = Field(..., description="The success status of the metrics computation")

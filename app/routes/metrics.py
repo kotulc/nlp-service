@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.metrics import MetricsResponse, MetricsRequest, MetricsType
+from app.models.metrics import MetricsResponse, MetricsRequest, MetricsType
 from app.core.metrics import categories, polarity, sentiment
 
 
