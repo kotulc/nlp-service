@@ -37,6 +37,13 @@ def sentence_polarity(content: str) -> list:
     return sentence_list, blob_list, vader_list
 
 
+def get_polarity(content: str) -> float
+    """Return the composite (mean) polarity score for the supplied content"""
+    blob_score, vader_score = content_polarity(content)
+    
+    return (blob_score + vader_score) / 2
+
+
 # Example usage and testing function
 def demo_polarity():
     """Test the polarity functions with different parameters"""
@@ -64,17 +71,17 @@ def demo_polarity():
     for label, content in zip(content_labels, (negative_text, neutral_text, positive_text)):
         print(f"\nText: {label}")
         
-        blob, vader = content_polarity(content)
-        print(f"Content Polarity:", blob, vader)
+        blob_score, vader_score = content_polarity(content)
+        print(f"Content Polarity:", blob_score, vader_score)
         
     print("\n== Sentence Polarity ===")
     print(f"\nText: sample_text")
-    # Textblob and vader polarity scores range from [-1.0, 1.0] with 1 being the most positive
-    sentences, blob, vader = sentence_polarity(sample_text)
+    # Textblob and vader_score polarity scores range from [-1.0, 1.0] with 1 being the most positive
+    sentences, blob_score, vader_score = sentence_polarity(sample_text)
     
     # Format document sentence in a more readable way
     print(f"Sentence Polarity:")
-    for s, b, v in zip(sentences, blob, vader):
+    for s, b, v in zip(sentences, blob_score, vader_score):
         clean_text = "'" + " ".join(s.strip().split())[:60] + "...':"
         print(f"{clean_text:<64}", b, v)
 

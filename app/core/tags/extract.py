@@ -82,6 +82,15 @@ def extract_related(content: str, min_length: int=1, max_length: int=3, top_n: i
     return maximal_tags
 
 
+def get_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
+    """Return a dictionary of entities, keywords, and generated tags"""
+    entities = extract_entities(content, top_n)
+    keywords = extract_keywords(content, top_n)
+    related = extract_related(content, min_length, max_length, top_n)
+
+    return dict(entities=entities, keywords=keywords, related=related)
+
+
 # Example usage and testing function
 def demo_tagger():
     """Test the tagging functionality with different parameters."""

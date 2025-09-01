@@ -1,32 +1,33 @@
+from enum import Enum
 from fastapi import APIRouter
-from app.models.metrics import MetricsResponse, MetricsRequest, MetricsType
-from app.core.metrics import polarity, sentiment, style
+
+from app.models.base import BaseResponse, get_response
+from app.models.metrics import MetricsRequest, MetricsType
 
 
 # Define the router for metrics-related endpoints
-tags = [metrics_type.value for metrics_type in MetricsType]
-router = APIRouter(prefix="/metrics", tags=tags)
+metrics_names = [metrics_type.name for metrics_type in MetricsType]
+router = APIRouter(prefix="/metrics", tags=metrics_names)
 
-@router.post("/", response_model=MetricsResponse)
-async def get_context(request: MetricsRequest):
-    return sentiment(request)
 
-@router.post("/context/", response_model=MetricsResponse)
-async def get_context(request: MetricsRequest):
-    return style(request)
+@router.post("/", response_model=BaseResponse)
+async def get_metrics(request: MetricsRequest):
+    """Return a response including the metrics of the specified request types""""
+    # Parse Metrics request
+    content = request.content
+    metrics = request.metrics if request.metrics else MetricsType
 
-@router.post("/granularity/", response_model=MetricsResponse)
-async def get_granularity(request: MetricsRequest):
-    return granularity(request)
+    # Define BaseResponse data
+    response = get_response(content, metrics)
 
-@router.post("/objectivity/", response_model=MetricsResponse)
-async def get_objectivity(request: MetricsRequest):
-    return objectivity(request)
+    # Update and store results to the database (optional)
+    if request.merge:
+        # NOTE: This does not apply to deterministic content
+        # Merge existing results from the database
+        pass
+    if request.commit:
+        # Commit new results to the database
+        pass
 
-@router.post("/polarity/", response_model=MetricsResponse)
-async def get_polarity(request: MetricsRequest):
-    return polarity(request)
-
-@router.post("/sentiment/", response_model=MetricsResponse)
-async def get_sentiment(request: MetricsRequest):
-    return polarity(request)
+    # Return response
+    return response

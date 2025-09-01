@@ -1,42 +1,65 @@
+from enum import Enum
 from fastapi import APIRouter
-from app.models.summary import SummaryResponse, SummaryRequest, SummaryType
-from app.core.summary import generate
 
-# Note: DB update on response (optional: store_response, page_uri) 
-# Define the router for summary-related endpoints
-tags = [summary_type.value for summary_type in SummaryType]
-router = APIRouter(prefix="/summary", tags=tags)
+from app.models.base import BaseResponse, get_response
+from app.models.summary import SummaryRequest, SummaryType, HEADING_TYPES
+
+
+# Define supported summary argument keys
+SUMMARY_ARGS = ('n_sections', 'top_n')
+
+# Define the router for metrics-related endpoints
+summary_types = [summary_type.name for summary_type in SummaryType]
+router = APIRouter(prefix="/summary", tags=summary_types)
+
+
+def get_summary(request: SummaryRequest, summary_type: Enum=None) -> dict:
+    """Return a response containing the specified summary types""""
+    # Parse summary request arguments
+    summary = summary_type if summary_type else request.summary
+    model = request.model_dump(exclude_none=True)
+    kwargs = {k: v for k, v in model.items() if k in SUMMARY_ARGS}
+    
+    # Add heading type argument as required by get_headings()
+    if summary.name in HEADING_TYPES:
+        kwargs['heading'] = summary.name
+    
+    # Define BaseResponse data
+    response = get_response(request.content, summary, **kwargs)
+
+    # Update and store results to the database (optional)
+    if request.merge:
+        # NOTE: This does not apply to deterministic content
+        # Merge existing results from the database
+        pass
+    if request.commit:
+        # Commit new results to the database
+        pass
+
+    # Return response
+    return response
+
 
 @router.post("/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    return generate(request)
+async def get_title(request: SummaryRequest):
+    return get_summary(request)
 
-@router.post("/description/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    request.summary_type = "description"
-    return generate(request)
 
-@router.post("/list/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    request.summary_type = "list"
-    return generate(request)
+@router.post("/title", response_model=SummaryResponse)
+async def get_title(request: SummaryRequest):
+    return get_summary(request, summary_type=SummaryType.title)
 
-@router.post("/outline/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    request.summary_type = "outline"
-    return generate(request)
 
-@router.post("/slug/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    request.summary_type = "slug"
-    return generate(request)
+@router.post("/subtitle", response_model=SummaryResponse)
+async def get_subtitle(request: SummaryRequest):
+    return get_summary(request, summary_type=SummaryType.subtitle)
 
-@router.post("/subtitle/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    request.summary_type = "subtitle"
-    return generate(request)
 
-@router.post("/title/", response_model=SummaryResponse)
-async def get_summary(request: SummaryRequest):
-    request.summary_type = "title"
-    return generate(request)
+@router.post("/description", response_model=SummaryResponse)
+async def get_description(request: SummaryRequest):
+    return get_summary(request, summary_type=SummaryType.description)
+
+
+@router.post("/outline", response_model=SummaryResponse)
+async def get_outline(request: SummaryRequest):
+    return get_summary(request, summary_type=SummaryType.outline)
