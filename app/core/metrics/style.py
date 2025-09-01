@@ -7,7 +7,7 @@ from transformers import pipeline
 # Attempt to define labels on a scale of very low to very high in a given linguistic quality
 DICTION_LABELS = ['formal', 'concrete', 'informal', 'colloquial', 'literary', 'poetic', 'abstract']
 GENRE_LABELS = ['romance', 'drama', 'suspense', 'historical', 'non-fiction', 'adventure', 'sci-fi', 'fantasy']
-STYLE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative', 'experimental']
+MODE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative', 'experimental']
 TONE_LABELS = ['dogmatic', 'subjective', 'neutral', 'objective', 'impartial']
 
 # Define module-level variables
@@ -38,11 +38,11 @@ def score_genre(content: str) -> tuple[(list, str)]:
     return [round(float(v), 4) for v in result], GENRE_LABELS[numpy.argmax(result)]
 
 
-def score_style(content: str) -> tuple[(list, str)]:
+def score_mode(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for style"""
     # Zero-shot style score (ideally this uses a fine-tuned a model)
-    result = classify_content(content, STYLE_LABELS)
-    return [round(float(v), 4) for v in result], STYLE_LABELS[numpy.argmax(result)]
+    result = classify_content(content, MODE_LABELS)
+    return [round(float(v), 4) for v in result], MODE_LABELS[numpy.argmax(result)]
 
 
 def score_tone(content: str) -> tuple[(list, str)]:
@@ -67,8 +67,8 @@ def score_tone(content: str) -> tuple[(list, str)]:
 
 
 # Example usage and testing function
-def demo_categories():
-    """Test the summarization function with different parameters"""
+def demo_style():
+    """Test the style scoring function with different parameters"""
 
     sample_text = """
     Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
@@ -100,9 +100,9 @@ def demo_categories():
         scores, label = score_genre(content)
         print("Genre score:", scores, "Label:", label)
 
-        # Style score and label
-        scores, label = score_style(content)
-        print("Style score:", scores, "Label:", label)
+        # Mode score and label
+        scores, label = score_mode(content)
+        print("Mode score:", scores, "Label:", label)
 
         # Subjectivity score and label
         scores, label = score_tone(content)
@@ -110,4 +110,4 @@ def demo_categories():
 
 
 if __name__ == "__main__":
-    demo_categories()
+    demo_style()

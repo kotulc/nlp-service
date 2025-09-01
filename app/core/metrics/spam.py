@@ -33,7 +33,7 @@ def score_toxicity(content: str) -> list:
 
 # Example usage and testing function
 def demo_spam():
-    """Test the sentiment functions with different parameters"""
+    """Test the spam scoring functions with different parameters"""
 
     sample_text = """
     Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 

@@ -7,6 +7,7 @@ from keybert import KeyBERT
 from app.core.summary.generate import generate_summary
 from app.core.tags.similarity import maximal_marginal_relevance, semantic_similarity_selection
 
+
 # Define module level constants
 TAG_PROMPTS = [
     "With as few words as possible, list several related trending topics from the following text",
@@ -61,7 +62,7 @@ def extract_keywords(content: str, top_n: int=10) -> list:
     return ranked_keywords
 
 
-def extract_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
+def extract_related(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
     """Use language models to generate lists of related concepts and topics"""
     # Generate related topics, themes, and concepts
     tag_strings = []
@@ -105,11 +106,11 @@ def demo_tagger():
     result = extract_keywords(sample_text, top_n=8)
     print("\nExtracted keywords:", result)
 
-    result = extract_tags(sample_text, min_length=1, max_length=3, top_n=5)
-    print("\nExtracted tags (min ngram=1):", result)
+    result = extract_related(sample_text, min_length=1, max_length=3, top_n=5)
+    print("\nExtracted related tags (min ngram=1):", result)
 
-    result = extract_tags(sample_text, min_length=2, max_length=5, top_n=5)
-    print("\nExtracted tags (min ngram=2):", result)
+    result = extract_related(sample_text, min_length=2, max_length=5, top_n=5)
+    print("\nExtracted related tags (min ngram=2):", result)
 
 
 if __name__ == "__main__":

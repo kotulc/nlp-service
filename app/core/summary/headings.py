@@ -39,7 +39,7 @@ embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 spacy_nlp = spacy.load("en_core_web_lg")
 
 
-def composite_selection(content: str, candidates: list[str], top_n) -> list:
+def composite_selection(content: str, candidates: list[str], top_n: int=3) -> list:
     """Select candidates using compound (linguistic + similarity) scores"""
     # Filter out duplicate candidate headings
     candidates = list({s.lower() for s in candidates})

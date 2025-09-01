@@ -1,7 +1,7 @@
 import spacy
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from app.core.metrics.categories import classify_content
+from app.core.metrics.style import classify_content
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
