@@ -1,7 +1,7 @@
 from enum import Enum
 from fastapi import APIRouter
 
-from app.models.base import BaseResponse, get_response
+from app.schemas.base import BaseResponse, get_response
 from app.models.tags import TagRequest, TagType
 
 

@@ -1,0 +1,38 @@
+generation: 
+  max_new_tokens: 128
+  num_return_sequences: 1
+  repetition_penalty: 1.2
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 50
+
+models: 
+  default: google/gemma-3-1b-it
+  gemma: google/gemma-3-1b-it
+  phi4: microsoft/Phi-4-mini-instruct
+
+summary:
+  title:
+    prompt: Generate a concise and engaging title
+    tone: professional
+    temperature: 0.3
+    max_new_tokens: 16
+    min_new_tokens: 1
+    num_return_sequences: 1
+  subtitle:
+    prompt: Supply an descriptive insightful subtitle
+    tone: casual
+    temperature: 0.2
+    max_new_tokens: 24
+    min_new_tokens: 3
+    num_return_sequences: 1
+  description: 
+    prompt: Provide a detailed and informative description
+    tone: professional
+    temperature: 0.3
+    max_new_tokens: 60
+    min_new_tokens: 16
+    num_return_sequences: 1
+
+templates:
+  default: {prompt}:\n\nText: {content}\n\n{delimiter}

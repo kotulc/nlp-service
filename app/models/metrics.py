@@ -1,7 +1,7 @@
 from enum import Enum
 from pydantic import Field
 
-from app.models.base import BaseRequest
+from app.schemas.base import BaseRequest
 from app.core.metrics import polarity, sentiment, spam, style
 
 

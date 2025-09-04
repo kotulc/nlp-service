@@ -1,7 +1,7 @@
 from enum import Enum
 from pydantic import Field
 
-from app.models.base import BaseRequest
+from app.schemas.base import BaseRequest
 from app.core.tags.extract import extract_entities, extract_keywords, extract_related, get_tags
 
 
