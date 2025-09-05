@@ -48,11 +48,10 @@ tags:
   - "With as few words as possible, list high level ideas and themes of the following text"
   - "With as few words as possible, list several tangentially related concepts to the following text"
 
-templates:
-  default: "{prompt}:\n\nText: {content}\n\n{delimiter}"
+template: "{prompt}:\n\nText: {content}\n\n{delimiter}"
 
 transformers:
-  max_new_tokens: 128
+  max_new_tokens: 32
   num_return_sequences: 1
   repetition_penalty: 1.2
   temperature: 0.7

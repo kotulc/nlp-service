@@ -9,42 +9,26 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from app.config import get_settings
 
 
-# Define some fallback defaults in case the local config is missing
+# Extract constants from settings
 settings = get_settings()
-DEFAULT_MODEL = "google/gemma-3-1b-it"
-
-# Define module level constants
-DEFAULT_TEMPLATE = "{prompt}:\n\nText: {content}\n\n{delimiter}"
-if settings.template:
-    DEFAULT_TEMPLATE = settings.templates.get("default", DEFAULT_TEMPLATE)
-
-# Load the local transformers configurations
-transformers_config = {}
-config_path = pathlib.Path(__file__).parent.parent.parent / 'config/transformers.json'
-if config_path.exists():
-    with open(config_path, 'r') as config_file:
-        transformers_config = json.load(config_file)
-        assert isinstance(transformers_config, dict)
-
-# Get the system default model and template used for text generation
-model_id = transformers_config.get("models", {}).get("default", DEFAULT_MODEL)
-prompt_template = transformers_config.get("templates", {}).get("default", DEFAULT_TEMPLATE)
-generation_defaults = transformers_config.get("generation", {})
+DEFAULT_MODEL = settings.defaults.models.default
+DEFAULT_TEMPLATE = settings.defaults.template
+DEFAULT_KWARGS = settings.defaults.transformers
 
 # Load the tokenizer and model
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16, device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
+model = AutoModelForCausalLM.from_pretrained(DEFAULT_MODEL, torch_dtype=torch.bfloat16, device_map="auto")
 generator = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 
 def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:
     """Generate a content summary string using a specified model and prompt"""
     # Overload default arguments with user supplied arguments
-    user_config = generation_defaults.copy()
+    user_config = DEFAULT_KWARGS.copy()
     user_config.update(**kwargs)
 
     # Apply the prompt template and generate the summary
-    text_prompt = prompt_template.format(prompt=prompt, content=content, delimiter=delimiter)
+    text_prompt = DEFAULT_TEMPLATE.format(prompt=prompt, content=content, delimiter=delimiter)
     sequences = generator(text_prompt, do_sample=True, return_full_text=False, **user_config)
 
     # For each returned text sequence extract the generated content

@@ -11,14 +11,7 @@ from app.config import get_settings
 
 # Define module level constants
 settings = get_settings()
-if settings.tags:
-    TAG_PROMPTS = settings.tags
-else:
-    TAG_PROMPTS = [
-        "With as few words as possible, list several related trending topics from the following text",
-        "With as few words as possible, list high level ideas and themes of the following text",
-        "With as few words as possible, list several tangentially related concepts to the following text",
-    ]
+TAG_PROMPTS = settings.defaults.tags
 
 # Define module level variables
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
