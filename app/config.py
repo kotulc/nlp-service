@@ -1,21 +1,17 @@
 import yaml
 
-from pydantic_settings import BaseSettings
+from functools import lru_cache
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# Define application-level settings class inheriting from BaseSettings
-class ApplicationSettings(BaseSettings):
-    name: str
-    debug: bool = False
-    defaults_path: str = "defaults.yaml"
-
-
-# Define application-level settings class inheriting from BaseSettings
+# Define database settings class
 class DatabaseSettings(BaseSettings):
-    db_url: str = "sqlite:///./sql_app.db"
+    file: str = "sql_app.db"
+    url: str = "sqlite:///./sql_app.db"
+    connect_args: dict = {"check_same_thread": False}
 
 
-# Define application-level settings class inheriting from BaseSettings
+# Define function constants class
 class DefaultSettings(BaseSettings):
     generation: dict[str, dict]
     models: dict[str, str]
@@ -23,7 +19,24 @@ class DefaultSettings(BaseSettings):
     templates: dict[str, str]
     
     @classmethod
-    def from_yaml(cls, path: str = "config.yaml"):
+    def from_yaml(cls, path: str="defaults.yaml"):
         with open(path, "r") as f:
             data = yaml.safe_load(f)
         return cls(**data)
+
+
+# Define application-level settings class inheriting from BaseSettings
+class ApplicationSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file='.env')
+
+    name: str = "NLP Service"
+    version: str = "0.1.0"
+    debug: bool = False
+
+    database = DatabaseSettings
+    defaults = DefaultSettings.from_yaml()
+
+
+@lru_cache()
+def get_settings() -> ApplicationSettings:
+    return ApplicationSettings()

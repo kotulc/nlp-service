@@ -3,6 +3,7 @@ import numpy
 from textblob import TextBlob
 from transformers import pipeline
 
+
 # Define elements of literary analysis
 # Attempt to define labels on a scale of very low to very high in a given linguistic quality
 DICTION_LABELS = ['formal', 'concrete', 'informal', 'colloquial', 'literary', 'poetic', 'abstract']

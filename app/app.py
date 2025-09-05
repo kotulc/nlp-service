@@ -1,13 +1,16 @@
 from fastapi import FastAPI
-from app.routes import metrics, summary, tags, workflow
+
+from app.config import get_settings
 from app.database import create_db_and_tables
+from app.routes import metrics, summary, tags
 
 
 # Initialize FastAPI app
-app = FastAPI(title="NLP Service")
+settings = get_settings()
+app = FastAPI(title=settings.name, version=settings.version, debug=settings.debug)
 
 # Include all active routers
-for endpoints in [metrics, summary, tags, workflow]:
+for endpoints in [metrics, summary, tags]:
     app.include_router(endpoints.router)
 
 

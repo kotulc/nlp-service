@@ -1,12 +1,13 @@
 from sqlmodel import create_engine, Session, SQLModel
-from app.config import DatabaseSettings
+from app.config import get_settings
 
 
 # Define database engine
-engine = create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
+settings = get_settings().database
+engine = create_engine(settings.url, connect_args=settings.connect_args)
 
 
-def create_db_and_tables():
+def init_database():
     SQLModel.metadata.create_all(engine)
 
 

@@ -6,10 +6,17 @@ import transformers
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from app.config import get_settings
+
 
 # Define some fallback defaults in case the local config is missing
+settings = get_settings()
 DEFAULT_MODEL = "google/gemma-3-1b-it"
+
+# Define module level constants
 DEFAULT_TEMPLATE = "{prompt}:\n\nText: {content}\n\n{delimiter}"
+if settings.template:
+    DEFAULT_TEMPLATE = settings.templates.get("default", DEFAULT_TEMPLATE)
 
 # Load the local transformers configurations
 transformers_config = {}

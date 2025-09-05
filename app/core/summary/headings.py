@@ -2,32 +2,38 @@ import numpy
 import spacy
 
 from app.core.summary.generate import generate_summary
+from app.config import get_settings
 
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 # Define module-level constants
-HEADING_PROMPTS = {
-    "title": [
-        "In 5 words or less, list multiple concise and engaging titles for the following text",
-        "In as few words as possible, list several short, attention grabbing titles for the following text",
-        "In as few words as possible, list various potential headlines related to the following text",
-        "Rephrase the following terms into a list of short pithy titles"
-    ],
-    "subtitle": [
-        "state several terse and succinct statements describing the following text",
-        "list several short, attention grabbing captions for the following text",
-        "In 8 words or less, list various subtitles for the following text",
-        "Rephrase the following statements into a list of short pithy subtitles"
-    ],
-    "description": [
-        "Generate many short concise single-sentence descriptions of the following text",
-        "List several brief, terse explanations of the following text",
-        "List multiple varied summaries of the following text",
-        "Rephrase the following statements into a list of concise summaries"
-    ],
-}
+settings = get_settings()
+if settings.headings:
+    HEADING_PROMPTS = settings.headings
+else:
+    HEADING_PROMPTS = {
+        "title": [
+            "In 5 words or less, list multiple concise and engaging titles for the following text",
+            "In as few words as possible, list several short, attention grabbing titles for the following text",
+            "In as few words as possible, list various potential headlines related to the following text",
+            "Rephrase the following terms into a list of short pithy titles"
+        ],
+        "subtitle": [
+            "state several terse and succinct statements describing the following text",
+            "list several short, attention grabbing captions for the following text",
+            "In 8 words or less, list various subtitles for the following text",
+            "Rephrase the following statements into a list of short pithy subtitles"
+        ],
+        "description": [
+            "Generate many short concise single-sentence descriptions of the following text",
+            "List several brief, terse explanations of the following text",
+            "List multiple varied summaries of the following text",
+            "Rephrase the following statements into a list of concise summaries"
+        ],
+    }
 
 # Load a model fine-tuned on the CoLA dataset fot linguistic acceptability scoring
 classifier = pipeline("text-classification", model="textattack/roberta-base-CoLA")
