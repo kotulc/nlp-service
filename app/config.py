@@ -1,6 +1,7 @@
 import yaml
 
 from functools import lru_cache
+from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -63,9 +64,9 @@ class GenerationSettings(BaseSettings):
     
 
 class SummarySettings(BaseSettings):
-    title = GenerationSettings
-    subtitle = GenerationSettings
-    description = GenerationSettings
+    title: GenerationSettings = Field(default_factory=GenerationSettings, description="Settings for title generation")
+    subtitle: GenerationSettings = Field(default_factory=GenerationSettings, description="Settings for subtitle generation")
+    description: GenerationSettings = Field(default_factory=GenerationSettings, description="Settings for description generation")
 
 
 class TransformersSettings(BaseSettings):
@@ -79,15 +80,15 @@ class TransformersSettings(BaseSettings):
 
 # Define function default argument settings yaml class
 class DefaultSettings(BaseSettings):
-    headings: HeadingsSettings
-    models: ModelSettings
-    summary: SummarySettings
+    headings: HeadingsSettings = Field(default_factory=HeadingsSettings)
+    models: ModelSettings = Field(default_factory=ModelSettings)
+    summary: SummarySettings = Field(default_factory=SummarySettings)
     tags: list[str] = Field(default=TAGS_PROMPTS, min_length=3)
     template: str = Field(default="{prompt}:\n\nText: {content}\n\n{delimiter}") 
-    transformers: TransformersSettings
+    transformers: TransformersSettings = Field(default_factory=TransformersSettings)
     
     @classmethod
-    def from_yaml(cls, path: str="defaults.yaml"):
+    def from_yaml(cls, path: str):
         with open(path, "r") as f:
             data = yaml.safe_load(f)
         return cls(**data)
@@ -101,8 +102,13 @@ class ApplicationSettings(BaseSettings):
     version: str = "0.1.0"
     debug: bool = False
 
-    database = DatabaseSettings
-    defaults = DefaultSettings.from_yaml()
+    database: DatabaseSettings = Field(default_factory=DatabaseSettings)
+
+    if Path("app/defaults.yaml").exists():
+        # If the defaults.yaml file exists, load default settings from it
+        defaults: DefaultSettings = DefaultSettings.from_yaml("app/defaults.yaml")
+    else:
+        defaults: DefaultSettings = Field(default_factory=DefaultSettings)
 
 
 @lru_cache()

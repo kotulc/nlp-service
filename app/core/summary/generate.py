@@ -13,7 +13,7 @@ from app.config import get_settings
 settings = get_settings()
 DEFAULT_MODEL = settings.defaults.models.default
 DEFAULT_TEMPLATE = settings.defaults.template
-DEFAULT_KWARGS = settings.defaults.transformers
+DEFAULT_KWARGS = settings.defaults.transformers.model_dump()
 
 # Load the tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
