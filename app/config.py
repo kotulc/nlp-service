@@ -27,6 +27,8 @@ HEADING_PROMPTS = {
         "Rephrase the following statements into a list of concise summaries"
     ],
 }
+
+# Define several different tag generation prompts for variety
 TAGS_PROMPTS = [
     "With as few words as possible, list several related trending topics from the following text",
     "With as few words as possible, list high level ideas and themes of the following text",
@@ -36,6 +38,7 @@ TAGS_PROMPTS = [
 
 # Define database settings class
 class DatabaseSettings(BaseSettings):
+    """Define database connection settings"""
     file: str = "sql_app.db"
     url: str = "sqlite:///./sql_app.db"
     connect_args: dict = {"check_same_thread": False}
@@ -43,33 +46,21 @@ class DatabaseSettings(BaseSettings):
 
 # Define nested constants classes
 class HeadingsSettings(BaseSettings):
+    """Define default heading prompts"""
     title: list[str] = Field(default=HEADING_PROMPTS["title"], min_length=4)
     subtitle: list[str] = Field(default=HEADING_PROMPTS["subtitle"], min_length=4)
     description: list[str] = Field(default=HEADING_PROMPTS["description"], min_length=4)
 
 
 class ModelSettings(BaseSettings):
+    """Define available and default model types"""
     default: str = "google/gemma-3-1b-it"
     gemma: str = "google/gemma-3-1b-it"
     phi4: str = "microsoft/Phi-4-mini-instruct" 
 
-    
-class GenerationSettings(BaseSettings):
-    prompt: str = "Generate a concise summary"
-    tone: str = "neutral"
-    temperature: float = 0.7
-    max_new_tokens: int = 32
-    min_new_tokens: int = 16
-    num_return_sequences: int = 1
-    
-
-class SummarySettings(BaseSettings):
-    title: GenerationSettings = Field(default_factory=GenerationSettings, description="Settings for title generation")
-    subtitle: GenerationSettings = Field(default_factory=GenerationSettings, description="Settings for subtitle generation")
-    description: GenerationSettings = Field(default_factory=GenerationSettings, description="Settings for description generation")
-
 
 class TransformersSettings(BaseSettings):
+    """Define default keyword arguments for Transformers generation"""
     max_new_tokens: int = 128
     num_return_sequences: int = 1
     repetition_penalty: float = 1.2
@@ -80,11 +71,11 @@ class TransformersSettings(BaseSettings):
 
 # Define function default argument settings yaml class
 class DefaultSettings(BaseSettings):
+    """Define default keyword argument for core functions"""
     headings: HeadingsSettings = Field(default_factory=HeadingsSettings)
-    models: ModelSettings = Field(default_factory=ModelSettings)
-    summary: SummarySettings = Field(default_factory=SummarySettings)
     tags: list[str] = Field(default=TAGS_PROMPTS, min_length=3)
     template: str = Field(default="{prompt}:\n\nText: {content}\n\n{delimiter}") 
+    models: ModelSettings = Field(default_factory=ModelSettings)
     transformers: TransformersSettings = Field(default_factory=TransformersSettings)
     
     @classmethod
@@ -94,10 +85,11 @@ class DefaultSettings(BaseSettings):
         return cls(**data)
 
 
-# Define application-level settings class inheriting from BaseSettings
+# Define the application-level settings class which loads values from a .env file
 class ApplicationSettings(BaseSettings):
+    """Define all application-level settings"""
+    # Load variables from a .env file if it exists
     model_config = SettingsConfigDict(env_file='.env')
-
     name: str = "NLP Service"
     version: str = "0.1.0"
     debug: bool = False

@@ -2,6 +2,7 @@ import numpy
 import spacy
 
 from app.core.summary.generate import generate_summary
+from app.core.utils.selection import composite_selection
 from app.config import get_settings
 
 from transformers import pipeline
@@ -13,32 +14,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 settings = get_settings()
 HEADING_PROMPTS = settings.defaults.headings.model_dump()
 
-# Load a model fine-tuned on the CoLA dataset fot linguistic acceptability scoring
-classifier = pipeline("text-classification", model="textattack/roberta-base-CoLA")
-
-# Define module level variables
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-
 # Define module-level variables
 spacy_nlp = spacy.load("en_core_web_lg")
-
-
-def composite_selection(content: str, candidates: list[str], top_n: int=3) -> list:
-    """Select candidates using compound (linguistic + similarity) scores"""
-    # Filter out duplicate candidate headings
-    candidates = list({s.lower() for s in candidates})
-
-    # Calculate linguistic acceptability scores for each candidate
-    linguistic_scores = numpy.array([classifier(candidate)[0]['score'] for candidate in candidates])
-
-    # Select the candidate with the highest compound (content similarity * linguistic) scores
-    content_embedding = embedding_model.encode([content])
-    candidate_embeddings = embedding_model.encode(candidates)
-    similarity_scores = cosine_similarity(content_embedding, candidate_embeddings).flatten()
-    candidate_scores = list(zip(candidates, linguistic_scores * similarity_scores))
-    sorted_scores = sorted(candidate_scores, key=lambda x: x[1], reverse=True)
-
-    return [candidate for candidate, _ in sorted_scores][:top_n]
 
 
 def get_headings(content: str, heading="title", top_n: int=3) -> tuple[list, str]:
@@ -47,7 +24,7 @@ def get_headings(content: str, heading="title", top_n: int=3) -> tuple[list, str
         raise ValueError(f"Supplied heading type '{heading}' is not a supported value.")
     
     # Define common generation kwargs
-    generation_kwargs = dict(format="list", max_new_tokens=top_n * 12, temperature=0.7)
+    generation_kwargs = dict(format="list", max_new_tokens=top_n * 12)
 
     candidates = []
     for prompt in HEADING_PROMPTS[heading][:-1]:
@@ -93,9 +70,8 @@ def get_outline(content: str, n_sections=3, top_n=3) -> list[list]:
     for i in range(0, n_sentences * n_sections, n_sentences):
         sections.append(" ".join(content_sentences[i:i + n_sentences]))
 
-    # TODO: Pull these args from configs
     # Define outline-specific generation kwargs
-    generation_kwargs = dict(format="list", max_new_tokens=32, temperature=0.7)
+    generation_kwargs = dict(format="list", max_new_tokens=32)
 
     # Generate candidate section descriptions
     section_descriptions = []

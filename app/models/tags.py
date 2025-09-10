@@ -1,16 +1,28 @@
 from enum import Enum
 from pydantic import Field
+from typing import List
 
-from app.schemas.base import BaseRequest
+from app.models.schemas import BaseResponse, BaseRequest
 from app.core.tags.extract import extract_entities, extract_keywords, extract_related, get_tags
 
 
-# Define supported default tag types
 class TagType(str, Enum):
     all_tags = get_tags         # Extract and return all tag types
     entities = extract_entities # Extract and return only entities
     keywords = extract_keywords # Extract and return keywords only
     related = extract_related   # Extract and return related concepts only
+
+
+class TagResults(BaseModel):
+    entities: List[str] = Field(..., description="The entities extracted from the supplied content")
+    keywords: List[str] = Field(..., description="The keywords extracted from the supplied content")
+    keyword_scores: List[float] = Field(..., description="The scores for each returned keyword")
+    related: List[str] = Field(..., description="The related concepts extracted from the supplied content") 
+    related_scores: List[float] = Field(..., description="The scores for each returned related concept")
+
+
+class TagResponse(BaseResponse):
+    results: TagResults = Field(..., description="The extracted tags of each requested type")
 
 
 class TagRequest(BaseRequest):

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.database import create_db_and_tables
+from app.database import init_database
 from app.routes import metrics, summary, tags
 
 
@@ -16,4 +16,4 @@ for endpoints in [metrics, summary, tags]:
 
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
+    init_database()

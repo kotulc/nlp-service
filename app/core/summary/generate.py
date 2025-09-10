@@ -24,12 +24,12 @@ generator = transformers.pipeline("text-generation", model=model, tokenizer=toke
 def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:
     """Generate a content summary string using a specified model and prompt"""
     # Overload default arguments with user supplied arguments
-    user_config = DEFAULT_KWARGS.copy()
-    user_config.update(**kwargs)
+    transformers_kwargs = DEFAULT_KWARGS.copy()
+    transformers_kwargs.update(**kwargs)
 
     # Apply the prompt template and generate the summary
     text_prompt = DEFAULT_TEMPLATE.format(prompt=prompt, content=content, delimiter=delimiter)
-    sequences = generator(text_prompt, do_sample=True, return_full_text=False, **user_config)
+    sequences = generator(text_prompt, do_sample=True, return_full_text=False, **transformers_kwargs)
 
     # For each returned text sequence extract the generated content
     text_sequences = [sequence["generated_text"] for sequence in sequences]
@@ -62,6 +62,7 @@ def generate_summary(content: str, prompt: str, format: str=None, tone: str=None
     # Return a list of extracted summary items
     parsed_list = []
     for response_string in response:
+        # Filter out empty or 1 character strings and strings without alphabetic characters
         if len(response_string) >= 2:
             substrings = re.split(regex_pattern, response_string)
             parsed_list.extend([s.strip() for s in substrings if s and re.search(r'[a-zA-Z]', s)])
@@ -97,7 +98,7 @@ def demo_generator():
     ]
 
     print("\n== Basic Summary ===")
-    print(f"Model: {model_id}")
+    print(f"Model: {DEFAULT_MODEL}")
     result = generate_summary(sample_text, "Provide a short summary of the following text", **generate_kwargs)
     print(result)
 

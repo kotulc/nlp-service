@@ -15,40 +15,17 @@ headings:
     - "List multiple varied summaries of the following text"
     - "Rephrase the following statements into a list of concise summaries"
 
-models: 
-  default: google/gemma-3-1b-it
-  gemma: google/gemma-3-1b-it
-  phi4: microsoft/Phi-4-mini-instruct
-
-summary:
-  title:
-    prompt: Generate a concise and engaging title
-    tone: professional
-    temperature: 0.3
-    max_new_tokens: 16
-    min_new_tokens: 1
-    num_return_sequences: 1
-  subtitle:
-    prompt: Supply an descriptive insightful subtitle
-    tone: casual
-    temperature: 0.2
-    max_new_tokens: 24
-    min_new_tokens: 3
-    num_return_sequences: 1
-  description: 
-    prompt: Provide a detailed and informative description
-    tone: professional
-    temperature: 0.3
-    max_new_tokens: 60
-    min_new_tokens: 16
-    num_return_sequences: 1
-
 tags:
   - "With as few words as possible, list several related trending topics from the following text"
   - "With as few words as possible, list high level ideas and themes of the following text"
   - "With as few words as possible, list several tangentially related concepts to the following text"
 
 template: "{prompt}:\n\nText: {content}\n\n{delimiter}"
+
+models: 
+  default: google/gemma-3-1b-it
+  gemma: google/gemma-3-1b-it
+  phi4: microsoft/Phi-4-mini-instruct
 
 transformers:
   max_new_tokens: 32

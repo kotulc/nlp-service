@@ -1,20 +1,25 @@
 from enum import Enum
 from pydantic import Field
+from typing import List
 
-from app.schemas.base import BaseRequest, get_response
+from app.models.schemas import BaseResponse, BaseRequest, get_response
 from app.core.summary import headings
 
 
-# Get heading types
-HEADING_TYPES = {k for k in headings.HEADING_PROMPTS.keys()}
-
-
-# Define supported default summary types
 class SummaryType(str, Enum):
     title = headings.get_title              # Suggested content titles
     subtitle = headings.get_subtitle        # Candidate content subtitles 
     description = headings.get_description  # Basic content summaries
     outline = headings.get_outline          # A list of content section key points or themes
+
+
+class SummaryResults(BaseModel):
+    summary: List[str] = Field(..., description="The summaries generated from the supplied content")
+    scores: List[float] = Field(..., description="The scores for each returned summary")
+
+
+class SummaryResponse(BaseResponse):
+    results: SummaryResults = Field(..., description="The extracted summaries of each requested type")
 
 
 class SummaryRequest(BaseRequest):

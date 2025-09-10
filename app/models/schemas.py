@@ -27,13 +27,12 @@ def get_response(content: str, operations: list, **kwargs) -> dict:
     return dict(success=success, results=results, metadata=meta)
 
 
-# Define base request and response classes
 class BaseResponse(BaseModel):
     id: int | None = Field(None, description="The id of the returned record")
     success: bool = Field(True, description="The success status of the requested operation")
-    results: Dict[str, Any] = Field(default_factory=dict, description="The computed or generated results")
+    results: Dict[str, list] = Field(default_factory=dict, description="The computed or generated results")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata related to the operation")
-     
+    
 
 class BaseRequest(BaseModel):
     content: str = Field(..., description="The text content for the requested operation")

@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
 
 from app.core.summary.generate import generate_summary
-from app.core.tags.similarity import maximal_marginal_relevance, semantic_similarity_selection
+from app.core.utils.similarity import maximal_marginal_relevance, semantic_similarity
 from app.config import get_settings
 
 
@@ -55,7 +55,7 @@ def extract_keywords(content: str, top_n: int=10) -> list:
         candidates.extend([k.lower() for k in keys])
 
     candidates = list(set(candidates))
-    ranked_keywords = semantic_similarity_selection(content, candidates, top_n=top_n)
+    ranked_keywords = semantic_similarity(content, candidates, top_n=top_n)
 
     return ranked_keywords
 

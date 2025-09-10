@@ -25,7 +25,7 @@ class Section(BaseSQLModel, table=True):
 
 
 class Content(BaseSQLModel):
-    """Document or section sentence or paragraph"""
+    """Document, section or paragraph"""
     content: str = Field(min_length=1, max_length=255)
     document: int | None = Field(default=None, foreign_key="document.id")
     section: int | None = Field(default=None, foreign_key="section.id")
@@ -35,7 +35,7 @@ class Content(BaseSQLModel):
 class Metric(BaseSQLModel):
     """Computed or derived composite metric"""
     category: str = Field(min_length=1, max_length=32, index=True)
-    content: int = Field(foreign_key='content.id', index=True)
+    content: int = Field(foreign_key='content.id')
     score: float
 
 
@@ -43,7 +43,8 @@ class Summary(BaseSQLModel):
     """Generated content title, subtitle, or outline scored by relevance"""
     summary: str = Field(min_length=1, max_length=255)
     category: str = Field(min_length=1, max_length=32, index=True)
-    content: int = Field(foreign_key='content.id', index=True)
+    content: int = Field(foreign_key='content.id')
+    selected: bool = Field(default=False)
     score: float
 
 
@@ -51,5 +52,6 @@ class Tag(BaseSQLModel):
     """A single unique content relevance scored tag"""
     tag: str = Field(min_length=1, max_length=64)
     category: str = Field(min_length=1, max_length=32, index=True) 
-    content: int = Field(foreign_key='content.id', index=True)
+    content: int = Field(foreign_key='content.id')
+    selected: bool = Field(default=False)
     score: float

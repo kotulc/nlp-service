@@ -39,7 +39,7 @@ def maximal_marginal_relevance(content, candidates, sim_lambda=0.5, top_n=10) ->
     return [candidate for candidate, _, _ in selected]
 
 
-def semantic_similarity_selection(content: str, candidates: list, top_n: int=10) -> list:
+def semantic_similarity(content: str, candidates: list, top_n: int=10) -> list:
     """Rank words by semantic similarity to text using embeddings"""
     # Create embeddings
     content_embedding = embedding_model.encode([content])
