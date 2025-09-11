@@ -14,7 +14,7 @@ class SummaryType(str, Enum):
 
 
 class SummaryResults(BaseModel):
-    summary: List[str] = Field(..., description="The summaries generated from the supplied content")
+    summaries: List[str] = Field(..., description="The summaries generated from the supplied content")
     scores: List[float] = Field(..., description="The scores for each returned summary")
 
 

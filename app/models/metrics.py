@@ -7,14 +7,14 @@ from app.core.metrics import polarity, sentiment, spam, style
 
 
 class MetricsType(str, Enum):
-    diction = style.score_diction       # Vocabulary, formality and complexity of text
-    genre = style.score_genre           # The assessed literary category
-    mode = style.score_mode             # The writing style or voice
-    tone = style.score_tone             # The expressed subjectivity (from dogmatic to impartial)
-    sentiment = sentiment.get_sentiment # The negative, neutral, and positive class scores [0.0, 1.0]
-    polarity = polarity.get_polarity    # The degree of negative or positive sentiment [-1.0, 1.0]
-    toxicity = spam.score_toxicity      # The computed toxcicity score [0.0, 1.0] 
-    spam = spam.score_spam              # The negative and positive spam class scores [0.0, 1.0]
+    diction = style.score_diction           # Vocabulary, formality and complexity of text
+    genre = style.score_genre               # The assessed literary category
+    mode = style.score_mode                 # The writing style or voice
+    tone = style.score_tone                 # The expressed subjectivity (from dogmatic to impartial)
+    sentiment = sentiment.score_sentiment   # The negative, neutral, and positive class scores [0.0, 1.0]
+    polarity = polarity.score_polarity      # The degree of negative or positive sentiment [-1.0, 1.0]
+    toxicity = spam.score_toxicity          # The computed toxcicity score [0.0, 1.0] 
+    spam = spam.score_spam                  # The negative and positive spam class scores [0.0, 1.0]
 
 
 class metricsResults(BaseModel):

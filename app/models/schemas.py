@@ -12,7 +12,7 @@ def get_response(content: str, operations: list, **kwargs) -> dict:
     # Convert supplied operation to iterable 
     if not isinstance(operations, Iterable): operations = [operations]
 
-    # Define BaseResponse data
+    # Define BaseResponse return values
     success, results, meta = True, {}, {}
     try:
         # Get all requested enum operations results
