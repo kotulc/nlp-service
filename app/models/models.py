@@ -1,11 +1,24 @@
 import uuid
 
+from datetime import datetime
 from sqlmodel import Field, SQLModel
 
 
 # Define base content class
 class BaseSQLModel(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
+    visible: bool = Field(default=True, description="The visibility status of the record")
+    created_at: datetime = Field(
+        default_factory=datetime.utcnow, 
+        description="The record creation timestamp"
+        nullable=False
+    )
+    updated_at: datetime = Field(
+        default_factory=datetime.utcnow,
+        sa_column_kwargs={"onupdate": datetime.utcnow},
+        description="The record last updated timestamp"
+        nullable=False
+    )
 
 
 class Document(BaseSQLModel, table=True):

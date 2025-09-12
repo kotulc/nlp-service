@@ -7,24 +7,22 @@ from typing import Any, Dict, List
 
 
 # Define a simple request handling method 
-def get_response(content: str, operations: list, **kwargs) -> dict:
+def get_response(content: str, operation: enum, **kwargs) -> dict:
     """Supply user content and arguments to each requested operation"""
     # Convert supplied operation to iterable 
-    if not isinstance(operations, Iterable): operations = [operations]
+    assert isinstance(operation, enum), "The supplied operation must be an enum type"
 
     # Define BaseResponse return values
     success, results, meta = True, {}, {}
     try:
         # Get all requested enum operations results
-        for operation in operations:
-            assert isinstance(operation, Enum), "Supplied operations must be an enum element"
-            results[operation.name] = operation.value(content=content, **kwargs)
+        result = operation.value(content=content, **kwargs)
     except Exception as e:
         # Handle all exceptions
         meta[str(type(e))] = str(e)
         success = False
 
-    return dict(success=success, results=results, metadata=meta)
+    return dict(success=success, results=result, metadata=meta)
 
 
 class BaseResponse(BaseModel):

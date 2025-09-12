@@ -6,6 +6,7 @@ from keybert import KeyBERT
 
 from app.core.summary.generate import generate_summary
 from app.core.utils.similarity import maximal_marginal_relevance, semantic_similarity
+from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
 
 
@@ -80,43 +81,20 @@ def extract_related(content: str, min_length: int=1, max_length: int=3, top_n: i
     return maximal_tags
 
 
-def get_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
-    """Return a dictionary of entities, keywords, and generated tags"""
-    entities = extract_entities(content, top_n)
-    keywords = extract_keywords(content, top_n)
-    related = extract_related(content, min_length, max_length, top_n)
-
-    return dict(entities=entities, keywords=keywords, related=related)
-
-
 # Example usage and testing function
 def demo_tagger():
     """Test the tagging functionality with different parameters."""
-
-    sample_text = """
-    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
-    natural intelligence displayed by animals including humans. Leading AI textbooks define 
-    the field as the study of "intelligent agents": any system that perceives its environment 
-    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
-    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
-    functions that humans associate with the human mind, such as "learning" and "problem solving".
-    As machines become increasingly capable, tasks considered to require "intelligence" are 
-    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
-    optical character recognition is frequently excluded from things considered to be AI, 
-    having become a routine technology.
-    """
-    
     print("\n=== Basic Tagging ===")
-    result = extract_entities(sample_text, top_n=5)
+    result = extract_entities(SAMPLE_TEXT, top_n=5)
     print("\nExtracted entities:", result)
 
-    result = extract_keywords(sample_text, top_n=8)
+    result = extract_keywords(SAMPLE_TEXT, top_n=8)
     print("\nExtracted keywords:", result)
 
-    result = extract_related(sample_text, min_length=1, max_length=3, top_n=5)
+    result = extract_related(SAMPLE_TEXT, min_length=1, max_length=3, top_n=5)
     print("\nExtracted related tags (min ngram=1):", result)
 
-    result = extract_related(sample_text, min_length=2, max_length=5, top_n=5)
+    result = extract_related(SAMPLE_TEXT, min_length=2, max_length=5, top_n=5)
     print("\nExtracted related tags (min ngram=2):", result)
 
 
