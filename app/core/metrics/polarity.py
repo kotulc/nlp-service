@@ -37,7 +37,7 @@ def sentence_polarity(content: str) -> list:
     return sentence_list, blob_list, vader_list
 
 
-def get_polarity(content: str) -> float:
+def score_polarity(content: str) -> float:
     """Return the composite (mean) polarity score for the supplied content"""
     blob_score, vader_score = content_polarity(content)
     

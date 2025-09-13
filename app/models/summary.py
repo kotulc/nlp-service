@@ -3,14 +3,7 @@ from pydantic import Field
 from typing import List
 
 from app.models.schemas import BaseResponse, BaseRequest, get_response
-from app.core.summary import headings
-
-
-class SummaryType(str, Enum):
-    title = headings.get_title              # Suggested content titles
-    subtitle = headings.get_subtitle        # Candidate content subtitles 
-    description = headings.get_description  # Basic content summaries
-    outline = headings.get_outline          # A list of content section key points or themes
+from app.core.summary.summary import SummaryType 
 
 
 class SummaryResults(BaseModel):
@@ -23,6 +16,6 @@ class SummaryResponse(BaseResponse):
 
 
 class SummaryRequest(BaseRequest):
-    summary: SummaryType = Field(..., description="Return the specified summary type")
+    summary: SummaryType = Field(SummaryType.description, description="Return the specified summary type")
     top_n: int | None = Field(None, description="Return the top N summaries of the specified type")
     n_sections: int | None = Field(None, description="The number of content sections to outline")
