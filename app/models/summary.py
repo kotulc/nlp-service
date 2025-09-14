@@ -1,4 +1,3 @@
-from enum import Enum
 from pydantic import Field
 from typing import List
 
@@ -16,6 +15,6 @@ class SummaryResponse(BaseResponse):
 
 
 class SummaryRequest(BaseRequest):
-    summary: SummaryType = Field(SummaryType.description, description="Return the specified summary type")
+    summary: str = Field(default="description", description="Return the specified summary type")
     top_n: int | None = Field(None, description="Return the top N summaries of the specified type")
     n_sections: int | None = Field(None, description="The number of content sections to outline")

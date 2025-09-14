@@ -3,6 +3,8 @@ import numpy
 from textblob import TextBlob
 from transformers import pipeline
 
+from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
+
 
 # Define elements of literary analysis
 # Attempt to define labels on a scale of very low to very high in a given linguistic quality
@@ -29,21 +31,27 @@ def score_diction(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for diction"""
     # Zero-shot diction score (ideally this uses a fine-tuned a model)
     result = classify_content(content, DICTION_LABELS)
-    return [round(float(v), 4) for v in result], DICTION_LABELS[numpy.argmax(result)]
+    scores = dict(zip(DICTION_LABELS, [round(float(v), 4) for v in result]))
+
+    return scores, DICTION_LABELS[numpy.argmax(result)]
 
 
 def score_genre(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for genre"""
     # Zero-shot genre score (ideally this uses a fine-tuned a model)
     result = classify_content(content, GENRE_LABELS)
-    return [round(float(v), 4) for v in result], GENRE_LABELS[numpy.argmax(result)]
+    scores = dict(zip(GENRE_LABELS, [round(float(v), 4) for v in result]))
+
+    return scores, GENRE_LABELS[numpy.argmax(result)]
 
 
 def score_mode(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for style"""
     # Zero-shot style score (ideally this uses a fine-tuned a model)
     result = classify_content(content, MODE_LABELS)
-    return [round(float(v), 4) for v in result], MODE_LABELS[numpy.argmax(result)]
+    scores = dict(zip(MODE_LABELS, [round(float(v), 4) for v in result]))
+    
+    return scores, MODE_LABELS[numpy.argmax(result)]
 
 
 def score_tone(content: str) -> tuple[(list, str)]:
@@ -64,33 +72,19 @@ def score_tone(content: str) -> tuple[(list, str)]:
 
     # Combine scores and re-normalize
     result = (result + distribution) / numpy.sum(result + distribution)
-    return [round(float(v), 4) for v in result], TONE_LABELS[numpy.argmax(result)]
+    scores = dict(zip(TONE_LABELS, [round(float(v), 4) for v in result]))
+
+    return scores, TONE_LABELS[numpy.argmax(result)]
 
 
 # Example usage and testing function
 def demo_style():
     """Test the style scoring function with different parameters"""
-
-    sample_text = """
-    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
-    natural intelligence displayed by animals including humans. Leading AI textbooks define 
-    the field as the study of "intelligent agents": any system that perceives its environment 
-    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
-    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
-    functions that humans associate with the human mind, such as "learning" and "problem solving".
-    As machines become increasingly capable, tasks considered to require "intelligence" are 
-    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
-    optical character recognition is frequently excluded from things considered to be AI, 
-    having become a routine technology.
-    """
-
     content_labels = ('negative', 'neutral', 'positive', 'document')
-    negative_text = "I hate AI, it is the worst thing to happen to humanity ever"
-    neutral_text = "AI may be a devistating force, it could cause great harm if we don't guide it properly"
-    positive_text = "AI will bring about a utopian revolution, it will be very beneficial"
-
+    content_text = (NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT)
+    
     print("\n== Document Analysis ===")
-    for content_label, content in zip(content_labels, (negative_text, neutral_text, positive_text, sample_text)):
+    for content_label, content in zip(content_labels, content_text):
         print(f"\nText: {content_label}")
         
         # Diction score and label

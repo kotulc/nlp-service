@@ -3,6 +3,9 @@ import spacy
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
+
+
 # Define module-level variables
 vader_analyzer = SentimentIntensityAnalyzer()
 spacy_nlp = spacy.load("en_core_web_lg")
@@ -47,28 +50,11 @@ def score_polarity(content: str) -> float:
 # Example usage and testing function
 def demo_polarity():
     """Test the polarity functions with different parameters"""
-
-    sample_text = """
-    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
-    natural intelligence displayed by animals including humans. Leading AI textbooks define 
-    the field as the study of "intelligent agents": any system that perceives its environment 
-    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
-    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
-    functions that humans associate with the human mind, such as "learning" and "problem solving".
-    As machines become increasingly capable, tasks considered to require "intelligence" are 
-    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
-    optical character recognition is frequently excluded from things considered to be AI, 
-    having become a routine technology.
-    """
-
     content_labels = ('negative', 'neutral', 'positive', 'document')
-    negative_text = "I hate AI, it is the worst thing to happen to humanity ever"
-    neutral_text = "AI may be a devistating force, it could possibly mean the end of the world"
-    positive_text = "AI will bring about a utopian revolution, it will be very beneficial"
+    content_text = (NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT)
 
     print("\n== Document Polarity ===")
-
-    for label, content in zip(content_labels, (negative_text, neutral_text, positive_text)):
+    for label, content in zip(content_labels, content_text):
         print(f"\nText: {label}")
         
         blob_score, vader_score = content_polarity(content)
@@ -77,7 +63,7 @@ def demo_polarity():
     print("\n== Sentence Polarity ===")
     print(f"\nText: sample_text")
     # Textblob and vader_score polarity scores range from [-1.0, 1.0] with 1 being the most positive
-    sentences, blob_score, vader_score = sentence_polarity(sample_text)
+    sentences, blob_score, vader_score = sentence_polarity(SAMPLE_TEXT)
     
     # Format document sentence in a more readable way
     print(f"Sentence Polarity:")

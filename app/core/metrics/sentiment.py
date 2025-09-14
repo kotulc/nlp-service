@@ -1,7 +1,10 @@
 import spacy
 
+from typing import Dict
+
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from app.core.metrics.style import classify_content
+from app.core.utils.samples import SAMPLE_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
@@ -44,38 +47,33 @@ def sentence_sentiment(content: str) -> tuple[list]:
     return sentence_list, bart_list, vader_list
 
 
+def score_sentiment(content: str) -> Dict[str, float]:
+    """Return the composite (mean) sentiment score for the supplied content"""
+    # Composite score is the mean of two sentiment analyzers 
+    bart_scores, vader_scores = content_sentiment(content)
+    
+    # Label scores and round to 4 decimal places
+    scores = numpy.mean([bart_scores, vader_scores], axis=0)
+    scores = dict(zip(SENTIMENT_CLASSES, [round(float(v), 4) for v in score]))
+
+    return scores
+
+
 # Example usage and testing function
 def demo_sentiment():
     """Test the sentiment functions with different parameters"""
-
-    sample_text = """
-    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
-    natural intelligence displayed by animals including humans. Leading AI textbooks define 
-    the field as the study of "intelligent agents": any system that perceives its environment 
-    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
-    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
-    functions that humans associate with the human mind, such as "learning" and "problem solving".
-    As machines become increasingly capable, tasks considered to require "intelligence" are 
-    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
-    optical character recognition is frequently excluded from things considered to be AI, 
-    having become a routine technology.
-    """
-
     content_labels = ('negative', 'neutral', 'positive', 'document')
-    negative_text = "I hate AI, it is the worst thing to happen to humanity ever"
-    neutral_text = "AI may be a devistating force, it could possibly mean the end of the world"
-    positive_text = "AI will bring about a utopian revolution, it will be very beneficial"
-
+    content_text = (NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT)
     print("\n== Document Sentiment ===")
 
-    for label, content in zip(content_labels, (negative_text, neutral_text, positive_text)):
+    for label, content in zip(content_labels, content_text):
         print(f"\nText: {label}")
         blob, vader = content_sentiment(content)
         print(f"Content Sentiment:", blob, vader)
         
     print("\n== Sentence Sentiment ===")
     print(f"\nText: sample_text")
-    sentences, bart, vader = sentence_sentiment(sample_text)
+    sentences, bart, vader = sentence_sentiment(SAMPLE_TEXT)
     print(f"Sentence Sentiment:")
     for s, b, v in zip(sentences, bart, vader):
         clean_text = "'" + " ".join(s.strip().split())[:60] + "...':"

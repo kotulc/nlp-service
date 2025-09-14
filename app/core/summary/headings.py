@@ -1,7 +1,7 @@
 import numpy
 import spacy
 
-from app.core.summaries.generate import generate_summary
+from app.core.summary.generate import generate_summary
 from app.core.utils.relevance import composite_scores
 from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
@@ -58,7 +58,7 @@ def get_description(content: str, top_n: int=3) -> tuple[list, list]:
     return get_headings(content, heading="description", top_n=top_n)
 
 
-def get_outline(content: str, n_sections=3, top_n=3) -> tuple[list, list]:
+def get_outline(content: str, n_sections=3, top_n=3) -> list:
     """Perform map-reduce sentence summarization to generate an outline"""
     # Split the supplied content string into individual sentences
     content_sentences = [s.text for s in spacy_nlp(content).sents]

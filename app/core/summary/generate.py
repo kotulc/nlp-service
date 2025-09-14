@@ -7,6 +7,7 @@ import transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from app.config import get_settings
+from app.core.utils.samples import SAMPLE_TEXT
 
 
 # Extract constants from settings
@@ -73,33 +74,19 @@ def generate_summary(content: str, prompt: str, format: str=None, tone: str=None
 # Example usage and testing function
 def demo_generator():
     """Test the summarization function with different parameters"""
-
-    sample_text = """
-    Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
-    natural intelligence displayed by animals including humans. Leading AI textbooks define 
-    the field as the study of "intelligent agents": any system that perceives its environment 
-    and takes actions that maximize its chance of achieving its goals. Some popular accounts 
-    use the term "artificial intelligence" to describe machines that mimic "cognitive" 
-    functions that humans associate with the human mind, such as "learning" and "problem solving".
-    As machines become increasingly capable, tasks considered to require "intelligence" are 
-    often removed from the definition of AI, a phenomenon known as the AI effect. For instance, 
-    optical character recognition is frequently excluded from things considered to be AI, 
-    having become a routine technology.
-    """
-    
     # Define generation parameters, prompt, and related arguments
     generate_kwargs = dict(max_new_tokens=32, temperature=0.7)
     sample_kwargs = [
-        dict(content=sample_text, prompt="In 5 words or less, generate several concise and engaging titles", format="titles"),
-        dict(content=sample_text, prompt="In as few words as possible, list several tangentially related concepts", format="list"),
-        dict(content=sample_text, prompt="In as few words as possible, outline the following text", format="outline"),
-        dict(content=sample_text, prompt="Provide a list of 2-5 word summaries of the following text", format="list"),
-        dict(content=sample_text, prompt="Briefly summarize the following text", format="summary", tone='academic')
+        dict(content=SAMPLE_TEXT, prompt="In 5 words or less, generate several concise and engaging titles", format="titles"),
+        dict(content=SAMPLE_TEXT, prompt="In as few words as possible, list several tangentially related concepts", format="list"),
+        dict(content=SAMPLE_TEXT, prompt="In as few words as possible, outline the following text", format="outline"),
+        dict(content=SAMPLE_TEXT, prompt="Provide a list of 2-5 word summaries of the following text", format="list"),
+        dict(content=SAMPLE_TEXT, prompt="Briefly summarize the following text", format="summary", tone='academic')
     ]
 
     print("\n== Basic Summary ===")
     print(f"Model: {DEFAULT_MODEL}")
-    result = generate_summary(sample_text, "Provide a short summary of the following text", **generate_kwargs)
+    result = generate_summary(SAMPLE_TEXT, "Provide a short summary of the following text", **generate_kwargs)
     print(result)
 
     print("\n=== With Custom Prompt ===")

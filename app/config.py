@@ -22,7 +22,7 @@ HEADING_PROMPTS = {
     ],
     "description": [
         "Generate many short concise single-sentence descriptions of the following text",
-        "List several brief, terse explanations of the following text",
+        "List several brief, thematic explanations of the following text",
         "List multiple varied summaries of the following text",
         "Rephrase the following statements into a list of concise summaries"
     ],
