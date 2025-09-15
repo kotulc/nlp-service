@@ -1,10 +1,9 @@
 from enum import Enum
-from pydantic import Field
+from pydantic import BaseModel, Field
 from typing import Dict, List
 
-from app.models.schemas import BaseRequest
+from app.models.schemas import BaseRequest, BaseResponse
 from app.core.metrics import polarity, sentiment, spam, style
-
 
 
 class metricsResults(BaseModel):

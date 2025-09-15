@@ -16,5 +16,5 @@ class SummaryResponse(BaseResponse):
 
 class SummaryRequest(BaseRequest):
     summary: str = Field(default="description", description="Return the specified summary type")
-    top_n: int | None = Field(None, description="Return the top N summaries of the specified type")
     n_sections: int | None = Field(None, description="The number of content sections to outline")
+    top_n: int | None = Field(None, description="Return the top N summaries of the specified type")

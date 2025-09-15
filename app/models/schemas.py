@@ -1,5 +1,4 @@
 import uuid
-from enum import Enum
 
 from collections.abc import Iterable
 from pydantic import BaseModel, Field, model_validator
@@ -7,16 +6,16 @@ from typing import Any, Dict, List
 
 
 # Define a simple request handling method 
-def get_response(content: str, operation: enum, **kwargs) -> dict:
+def get_response(operation: callable, **kwargs) -> dict:
     """Supply user content and arguments to each requested operation"""
     # Convert supplied operation to iterable 
-    assert isinstance(operation, enum), "The supplied operation must be an enum type"
+    assert isinstance(operation, callable), "The supplied operation must be a callable type"
 
     # Define BaseResponse return values
     success, results, meta = True, {}, {}
     try:
         # Get all requested enum operations results
-        result = operation.value(content=content, **kwargs)
+        result = operation(**kwargs)
     except Exception as e:
         # Handle all exceptions
         meta[str(type(e))] = str(e)

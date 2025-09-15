@@ -1,8 +1,9 @@
 from enum import Enum
 from fastapi import APIRouter
 
-from app.schemas.base import BaseResponse, get_response
-from app.models.metrics import MetricsRequest, MetricsType
+from app.core.metrics.metrics import MetricsType, get_metrics
+from app.models.schemas import BaseResponse, get_response
+from app.models.metrics import MetricsRequest
 
 
 # Define the router for metrics-related endpoints
@@ -12,13 +13,9 @@ router = APIRouter(prefix="/metrics", tags=metrics_names)
 
 @router.post("/", response_model=BaseResponse)
 async def get_metrics(request: MetricsRequest):
-    """Return a response including the metrics of the specified request types""""
-    # Parse Metrics request
-    content = request.content
-    metrics = request.metrics if request.metrics else MetricsType
-
-    # Define BaseResponse data
-    response = get_response(content, metrics)
+    """Return a response including the metrics of the specified request types"""
+    # Get a response from the metrics operation
+    response = get_response(get_metrics, content=request.content, metrics=request.metrics)
 
     # Update and store results to the database (optional)
     if request.merge:

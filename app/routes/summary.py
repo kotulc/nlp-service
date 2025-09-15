@@ -1,8 +1,9 @@
 from enum import Enum
 from fastapi import APIRouter
 
-from app.schemas.base import BaseResponse, get_response
-from app.models.summary import SummaryRequest, SummaryType, HEADING_TYPES
+from app.core.summary.summary import SummaryType, get_summary
+from app.schemas.base import get_response
+from app.models.summary import SummaryRequest
 
 
 # Define supported summary argument keys
@@ -13,20 +14,17 @@ summary_types = [summary_type.name for summary_type in SummaryType]
 router = APIRouter(prefix="/summary", tags=summary_types)
 
 
-def get_summary(request: SummaryRequest, summary_type: Enum=None) -> dict:
-    """Return a response containing the specified summary types""""
-    # Parse summary request arguments
-    summary = summary_type if summary_type else request.summary
-    model = request.model_dump(exclude_none=True)
-    kwargs = {k: v for k, v in model.items() if k in SUMMARY_ARGS}
+def get_summary(request: SummaryRequest) -> dict:
+    """Return a response containing the specified summary types"""
+    # Get a response from the summary operation
+    response = get_response(
+        get_summary,
+        content=request.content,
+        summary=request.summary,
+        n_sections=request.n_sections, 
+        top_n=request.top_n
+    )
     
-    # Add heading type argument as required by get_headings()
-    if summary.name in HEADING_TYPES:
-        kwargs['heading'] = summary.name
-    
-    # Define BaseResponse data
-    response = get_response(request.content, summary, **kwargs)
-
     # Update and store results to the database (optional)
     if request.merge:
         # NOTE: This does not apply to deterministic content
