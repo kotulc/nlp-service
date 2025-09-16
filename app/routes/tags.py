@@ -1,9 +1,8 @@
-from enum import Enum
 from fastapi import APIRouter
 
 from app.core.tags.tags import TagType, get_tags
 from app.models.tags import TagRequest
-from app.schemas.base import BaseResponse, get_response
+from app.models.schemas import BaseResponse, get_response
 
 
 # Define supported tag argument keys
@@ -15,14 +14,14 @@ router = APIRouter(prefix="/tags", tags=tag_names)
 
 
 @router.post("/", response_model=BaseResponse)
-async def get_tags(request: TagRequest):
-    """Return a response including the metrics of the specified request types""""
+async def post_tags(request: TagRequest):
+    """Return a response including the metrics of the specified request types"""
     # Get a response from the tag operation
     response = get_response(
         get_tags, 
         content=request.content, 
+        min_length=request.min_length,
         max_length=request.max_length, 
-        min_length=request.min_length, 
         top_n=request.top_n
     )
 

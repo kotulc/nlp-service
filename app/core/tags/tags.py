@@ -1,4 +1,7 @@
+from enum import Enum
+
 from app.core.tags.extract import extract_entities, extract_keywords, extract_related
+
 
 class TagType(str, Enum):
     entities = extract_entities             

@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import BaseModel, Field
 from typing import List
 
 from app.models.schemas import BaseResponse, BaseRequest, get_response

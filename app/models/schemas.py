@@ -1,24 +1,21 @@
-import uuid
-
-from collections.abc import Iterable
-from pydantic import BaseModel, Field, model_validator
-from typing import Any, Dict, List
+from pydantic import BaseModel, Field
+from typing import Any, Dict
 
 
 # Define a simple request handling method 
 def get_response(operation: callable, **kwargs) -> dict:
     """Supply user content and arguments to each requested operation"""
-    # Convert supplied operation to iterable 
-    assert isinstance(operation, callable), "The supplied operation must be a callable type"
-
+    # Only pass non-None arguments to the operation
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    
     # Define BaseResponse return values
-    success, results, meta = True, {}, {}
+    success, result, meta = True, {}, {}
     try:
         # Get all requested enum operations results
         result = operation(**kwargs)
     except Exception as e:
         # Handle all exceptions
-        meta[str(type(e))] = str(e)
+        meta[type(e).__name__] = str(e)
         success = False
 
     return dict(success=success, results=result, metadata=meta)

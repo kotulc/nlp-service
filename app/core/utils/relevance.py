@@ -12,7 +12,7 @@ classifier = pipeline("text-classification", model="textattack/roberta-base-CoLA
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
-def composite_scores(content: str, candidates: list[str]) -> list:
+def composite_scores(content: str, candidates: list[str]) -> tuple:
     """Select candidates using compound (linguistic + similarity) scores"""
     # Filter out duplicate candidate headings
     candidates = list({s.lower() for s in candidates})
@@ -27,11 +27,13 @@ def composite_scores(content: str, candidates: list[str]) -> list:
     composite_scores = linguistic_scores * similarity_scores
     candidate_scores = list(zip(candidates, composite_scores.tolist()))
     sorted_scores = sorted(candidate_scores, key=lambda x: x[1], reverse=True)
+    
+    candidates, scores = list(zip(*sorted_scores))
 
-    return sorted_scores
+    return list(candidates), list(scores)
 
 
-def maximal_marginal_relevance(content: str, candidates: list, sim_lambda=0.5, top_n=10) -> list:
+def maximal_marginal_relevance(content: str, candidates: list, sim_lambda=0.5, top_n=10) -> tuple:
     """Select candidate words using maximal marginal relevance scoring"""
     # Create embeddings
     content_embedding = embedding_model.encode([content])
@@ -61,10 +63,10 @@ def maximal_marginal_relevance(content: str, candidates: list, sim_lambda=0.5, t
         selected.append(available_candidates[selected_index])
         available_candidates.pop(selected_index)
 
-    return list(zip(selected, scores))
+    return selected, scores
 
 
-def semantic_similarity(content: str, candidates: list) -> list:
+def semantic_similarity(content: str, candidates: list) -> tuple:
     """Rank words by semantic similarity to text using embeddings"""
     # Create embeddings
     content_embedding = embedding_model.encode([content])
@@ -72,7 +74,9 @@ def semantic_similarity(content: str, candidates: list) -> list:
     
     # Calculate cosine similarity and create word-score pairs
     similarities = cosine_similarity(content_embedding, candidate_embeddings)[0]
-    candidate_scores = list(zip(candidates, similarities))
+    candidate_scores = list(zip(candidates, similarities.tolist()))
     sorted_scores = sorted(candidate_scores, key=lambda x: x[1], reverse=True)
+    
+    candidates, scores = list(zip(*sorted_scores))
 
-    return sorted_scores
+    return list(candidates), list(scores)

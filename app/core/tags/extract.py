@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
 
 from app.core.summary.generate import generate_summary
-from app.core.utils.similarity import maximal_marginal_relevance, semantic_similarity
+from app.core.utils.relevance import maximal_marginal_relevance, semantic_similarity
 from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
 
@@ -31,7 +31,13 @@ yake_extractor = yake.KeywordExtractor(
 def extract_entities(content: str, top_n: int=5) -> list:
     """Extract entities and return the top_n results"""
     # Extract entity tags from spacy pipeline
-    return list({entity.text.strip() for entity in spacy_nlp(content).ents})[:top_n]
+    entities = list({entity.text.strip() for entity in spacy_nlp(content).ents})
+
+    if len(entities):
+        entities, scores = semantic_similarity(content, entities)
+        return entities[:top_n], scores[:top_n]
+    else:
+        return [], []
 
 
 def extract_keywords(content: str, top_n: int=10) -> list:
@@ -56,9 +62,9 @@ def extract_keywords(content: str, top_n: int=10) -> list:
         candidates.extend([k.lower() for k in keys])
 
     candidates = list(set(candidates))
-    ranked_keywords = semantic_similarity(content, candidates, top_n=top_n)
+    keywords, scores = semantic_similarity(content, candidates)
 
-    return ranked_keywords
+    return keywords[:top_n], scores[:top_n]
 
 
 def extract_related(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
@@ -76,9 +82,9 @@ def extract_related(content: str, min_length: int=1, max_length: int=3, top_n: i
 
     # Filter generated tag by length and return the top_n similarity results    
     candidates = [s for s in tag_strings if len(s.split()) >= min_length and len(s.split()) <= max_length]
-    maximal_tags = maximal_marginal_relevance(content, candidates, top_n=top_n)
+    tags, scores = maximal_marginal_relevance(content, candidates)
 
-    return maximal_tags
+    return tags[:top_n], scores[:top_n]
 
 
 # Example usage and testing function

@@ -4,10 +4,10 @@ from app.core.summary.headings import get_title, get_subtitle, get_description, 
 
 
 class SummaryType(str, Enum):
-    title = headings.get_title              # Suggested content titles
-    subtitle = headings.get_subtitle        # Candidate content subtitles 
-    description = headings.get_description  # Basic content summaries
-    outline = headings.get_outline          # A list of content section key points or themes
+    title = get_title              # Suggested content titles
+    subtitle = get_subtitle        # Candidate content subtitles 
+    description = get_description  # Basic content summaries
+    outline = get_outline          # A list of content section key points or themes
 
 
 def get_summary(content: str, summary: str, n_sections=3, top_n: int=10) -> tuple:
