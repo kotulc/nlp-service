@@ -10,6 +10,8 @@ def get_response(operation: callable, **kwargs) -> dict:
     
     # Define BaseResponse return values
     success, result, meta = True, {}, {}
+    result = operation(**kwargs)
+    
     try:
         # Get all requested enum operations results
         result = operation(**kwargs)

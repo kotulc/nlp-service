@@ -2,7 +2,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from typing import Dict, List
 
-from app.models.schemas import BaseResponse, BaseRequest
+from app.schemas.schemas import BaseResponse, BaseRequest
 
 
 class TagResults(BaseModel):

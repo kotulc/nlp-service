@@ -58,12 +58,13 @@ def maximal_marginal_relevance(content: str, candidates: list, sim_lambda=0.5, t
             mmr_scores.append(sim_lambda * similarity - (1 - sim_lambda) * max_similarity)
         
         # Select the next best candidate and remove it from the pool
+        mmr_scores = numpy.array(mmr_scores).flatten()
         selected_index = numpy.argmax(mmr_scores)
-        scores.append(mmr_scores[selected_index])
+        scores.append(mmr_scores[selected_index].item())
         selected.append(available_candidates[selected_index])
         available_candidates.pop(selected_index)
 
-    return selected, scores
+    return [s[0] for s in selected], scores
 
 
 def semantic_similarity(content: str, candidates: list) -> tuple:

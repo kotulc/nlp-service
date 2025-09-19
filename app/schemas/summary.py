@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List
 
-from app.models.schemas import BaseResponse, BaseRequest, get_response
+from app.schemas.schemas import BaseResponse, BaseRequest, get_response
 from app.core.summary.summary import SummaryType 
 
 

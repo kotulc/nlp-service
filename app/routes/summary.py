@@ -2,8 +2,8 @@ from enum import Enum
 from fastapi import APIRouter
 
 from app.core.summary.summary import SummaryType, get_summary
-from app.models.schemas import get_response
-from app.models.summary import SummaryRequest, SummaryResponse
+from app.schemas.schemas import get_response
+from app.schemas.summary import SummaryRequest, SummaryResponse
 
 
 # Define supported summary argument keys

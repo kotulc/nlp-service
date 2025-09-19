@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 from app.core.tags.tags import TagType, get_tags
-from app.models.tags import TagRequest
-from app.models.schemas import BaseResponse, get_response
+from app.schemas.schemas import BaseResponse, get_response
+from app.schemas.tags import TagRequest
 
 
 # Define supported tag argument keys
