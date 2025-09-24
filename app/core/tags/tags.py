@@ -9,7 +9,7 @@ class TagType(str, Enum):
     related = extract_related
 
 
-def get_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> tuple:
+def get_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:
     """Return a dictionary of entities, keywords, and related topic tags"""
     entities, entity_scores = extract_entities(content, top_n)
     keywords, keyword_scores = extract_keywords(content, top_n)
@@ -18,4 +18,4 @@ def get_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) 
     tags = dict(entities=entities, keywords=keywords, related=related)
     scores = dict(entities=entity_scores, keywords=keyword_scores, related=related_scores)
 
-    return tags, scores
+    return dict(tags=tags, scores=scores)

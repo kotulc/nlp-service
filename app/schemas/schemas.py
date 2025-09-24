@@ -10,8 +10,6 @@ def get_response(operation: callable, **kwargs) -> dict:
     
     # Define BaseResponse return values
     success, result, meta = True, {}, {}
-    result = operation(**kwargs)
-    
     try:
         # Get all requested enum operations results
         result = operation(**kwargs)
@@ -20,18 +18,16 @@ def get_response(operation: callable, **kwargs) -> dict:
         meta[type(e).__name__] = str(e)
         success = False
 
-    return dict(success=success, results=result, metadata=meta)
+    return dict(success=success, result=result, metadata=meta)
 
 
 class BaseResponse(BaseModel):
     id: int | None = Field(None, description="The id of the returned record")
     success: bool = Field(True, description="The success status of the requested operation")
-    results: Dict[str, list] = Field(default_factory=dict, description="The computed or generated results")
+    result: Dict[str, Any] = Field(default_factory=dict, description="The returned results")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata related to the operation")
     
 
 class BaseRequest(BaseModel):
     content: str = Field(..., description="The text content for the requested operation")
     source: str | None = Field(None, description="The source from which the content was extracted")
-    commit: bool = Field(True, description="Commit returned results to the local database")
-    merge: bool = Field(True, description="Merge the results of the operation with those from the local database")
