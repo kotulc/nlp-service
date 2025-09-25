@@ -39,25 +39,25 @@ def get_summary(request: SummaryRequest) -> dict:
 
 
 @router.post("/", response_model=SummaryResponse)
-async def get_title(request: SummaryRequest):
+async def post_summary(request: SummaryRequest):
     return get_summary(request)
 
 
 @router.post("/title", response_model=SummaryResponse)
-async def get_title(request: SummaryRequest):
+async def post_title(request: SummaryRequest):
     return get_summary(request, summary_type=SummaryType.title)
 
 
 @router.post("/subtitle", response_model=SummaryResponse)
-async def get_subtitle(request: SummaryRequest):
+async def post_subtitle(request: SummaryRequest):
     return get_summary(request, summary_type=SummaryType.subtitle)
 
 
 @router.post("/description", response_model=SummaryResponse)
-async def get_description(request: SummaryRequest):
+async def post_description(request: SummaryRequest):
     return get_summary(request, summary_type=SummaryType.description)
 
 
 @router.post("/outline", response_model=SummaryResponse)
-async def get_outline(request: SummaryRequest):
+async def post_outline(request: SummaryRequest):
     return get_summary(request, summary_type=SummaryType.outline)

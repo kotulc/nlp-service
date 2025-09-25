@@ -15,12 +15,12 @@ class MetricsType(str, Enum):
     spam = spam.score_spam                  # The negative and positive spam class scores [0.0, 1.0]
 
 
-def get_metrics(content: str, metrics: list=None) -> tuple:
+def get_metrics(content: str, metrics: list=None) -> dict:
     """Return a dictionary of the requested metrics for the supplied content"""
     results = {}
     
     # Default to all metrics if none are specified
-    metrics = metrics if metrics else [m for m in MetricsType]
+    metrics = metrics if metrics else [member.name for member in MetricsType]
     for metric in metrics:
         if isinstance(metric, str) and metric in MetricsType.__members__:
             metric = MetricsType[metric]

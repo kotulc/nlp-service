@@ -15,6 +15,9 @@ def test_tags():
     assert data["success"] is True
     assert "result" in data
     assert "metadata" in data
+    
+    assert "tags" in data["result"]
+    assert "scores" in data["result"]
 
 
 def test_tags_required():
