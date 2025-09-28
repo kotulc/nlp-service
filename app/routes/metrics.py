@@ -1,13 +1,13 @@
 from enum import Enum
 from fastapi import APIRouter
 
-from app.core.metrics.metrics import MetricsType, get_metrics
+from app.core.metrics.metrics import METRIC_TYPES, get_metrics
 from app.schemas.schemas import get_response
 from app.schemas.metrics import MetricsRequest, MetricsResponse
 
 
 # Define the router for metrics-related endpoints
-metrics_names = [metrics_type.name for metrics_type in MetricsType]
+metrics_names = [metrics_type for metrics_type in METRIC_TYPES.keys()]
 router = APIRouter(prefix="/metrics", tags=metrics_names)
 
 

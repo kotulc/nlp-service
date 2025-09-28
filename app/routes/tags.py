@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.core.tags.tags import TagType, get_tags
+from app.core.tags.tags import TAG_TYPES, get_tags
 from app.schemas.schemas import get_response
 from app.schemas.tags import TagRequest, TagResponse
 
@@ -9,7 +9,7 @@ from app.schemas.tags import TagRequest, TagResponse
 TAG_ARGS = ('min_length', 'max_length', 'top_n')
 
 # Define the router for tag-related endpoints
-tag_names = [tag_type.name for tag_type in TagType]
+tag_names = [tag_type for tag_type in TAG_TYPES.keys()]
 router = APIRouter(prefix="/tags", tags=tag_names)
 
 

@@ -3,10 +3,11 @@ from enum import Enum
 from app.core.tags.extract import extract_entities, extract_keywords, extract_related
 
 
-class TagType(str, Enum):
-    entities = extract_entities             
-    keywords = extract_keywords
-    related = extract_related
+TAG_TYPES = {
+    "entities": extract_entities,   # Named entities such as people, organizations, locations, etc.
+    "keywords": extract_keywords,   # Important keywords and phrases that capture the main topics
+    "related": extract_related      # Related topics and concepts derived from the content
+}
 
 
 def get_tags(content: str, min_length: int=1, max_length: int=3, top_n: int=10) -> dict:

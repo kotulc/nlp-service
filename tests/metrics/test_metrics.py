@@ -1,13 +1,13 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
-from app.core.metrics.metrics import MetricsType
+from app.core.metrics.metrics import METRIC_TYPES
 
 
 client = TestClient(app)
 
 
-def test_metrics_content_required():
+def test_metrics():
     """Confirm only 'content' argument is required"""
     payload = {"content": "Test content for metrics."}
     response = client.post("/metrics/", json=payload)
@@ -18,12 +18,12 @@ def test_metrics_content_required():
     assert "result" in data
     assert "metadata" in data
 
-    for metric in MetricsType:
-        assert metric.name.lower() in data["result"]
+    for metric in METRIC_TYPES.keys():
+        assert metric in data["result"]
 
 
-@pytest.mark.parametrize("metric_type", [m.name for m in MetricsType])
-def test_metrics_type_parameterized(metric_type):
+@pytest.mark.parametrize("metric_type", [m for m in METRIC_TYPES])
+def test_metrics_single_type(metric_type: str):
     """Test each metric type individually"""
     payload = {
         "content": "Test content for metrics.",
@@ -31,17 +31,19 @@ def test_metrics_type_parameterized(metric_type):
     }
     response = client.post("/metrics/", json=payload)
     assert response.status_code == 200
-    data = response.json()
-    assert "data" in data
+
     # Should contain the requested metric type in the response data
-    assert metric_type.lower() in data["data"]
+    data = response.json()
+    assert "result" in data
+    assert metric_type in data["result"]
+    assert len(data["result"]) == 1
 
 
 @pytest.mark.parametrize("metric_types", [
-    [m.name for m in MetricsType],
-    [MetricsType.__members__[k].name for k in list(MetricsType.__members__)[:2]],
+    [m for m in METRIC_TYPES],
+    [m for m in METRIC_TYPES][:2],
 ])
-def test_metrics_multiple_types(metric_types):
+def test_metrics_multiple_types(metric_types: list):
     """Test multiple metric types at once"""
     payload = {
         "content": "Test content for metrics.",
@@ -49,10 +51,13 @@ def test_metrics_multiple_types(metric_types):
     }
     response = client.post("/metrics/", json=payload)
     assert response.status_code == 200
+
     data = response.json()
     for metric in metric_types:
-        assert metric.lower() in data["data"]
-
+        assert metric in data["result"]
+    assert len(data["result"]) == len(metric_types)
 
 if __name__ == "__main__":
-    test_metrics_content_required()
+    # test_metrics()
+    test_metrics_single_type("diction")
+    test_metrics_multiple_types([m for m in METRIC_TYPES][:2])

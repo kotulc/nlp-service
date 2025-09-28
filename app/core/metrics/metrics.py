@@ -4,15 +4,16 @@ from typing import Dict
 from app.core.metrics import polarity, sentiment, spam, style
 
 
-class MetricsType(str, Enum):
-    diction = style.score_diction           # Vocabulary, formality and complexity of text
-    genre = style.score_genre               # The assessed literary category
-    mode = style.score_mode                 # The writing style or voice
-    tone = style.score_tone                 # The expressed subjectivity (from dogmatic to impartial)
-    sentiment = sentiment.score_sentiment   # The negative, neutral, and positive class scores [0.0, 1.0]
-    polarity = polarity.score_polarity      # The degree of negative or positive sentiment [-1.0, 1.0]
-    toxicity = spam.score_toxicity          # The computed toxcicity score [0.0, 1.0] 
-    spam = spam.score_spam                  # The negative and positive spam class scores [0.0, 1.0]
+METRIC_TYPES = {
+    "diction": style.score_diction,           # Vocabulary, formality and complexity of text
+    "genre": style.score_genre,               # The assessed literary category
+    "mode": style.score_mode,                 # The writing style or voice
+    "tone": style.score_tone,                 # The expressed subjectivity (from dogmatic to impartial)
+    "sentiment": sentiment.score_sentiment,   # The negative, neutral, and positive class scores [0.0, 1.0]
+    "polarity": polarity.score_polarity,      # The degree of negative or positive sentiment [-1.0, 1.0]
+    "toxicity": spam.score_toxicity,          # The computed toxcicity score [0.0, 1.0] 
+    "spam": spam.score_spam,                  # The negative and positive spam class scores [0.0, 1.0]
+}
 
 
 def get_metrics(content: str, metrics: list=None) -> dict:
@@ -20,14 +21,15 @@ def get_metrics(content: str, metrics: list=None) -> dict:
     results = {}
     
     # Default to all metrics if none are specified
-    metrics = metrics if metrics else [member.name for member in MetricsType]
+    metrics = metrics if metrics else list(METRIC_TYPES.keys())
+
     for metric in metrics:
-        if isinstance(metric, str) and metric in MetricsType.__members__:
-            metric = MetricsType[metric]
+        if metric in METRIC_TYPES:
+            metric_function = METRIC_TYPES[metric]
             if metric in ("diction", "genre", "mode", "tone"):
                 # Do not include the resulting label for these metrics
-                results[metric.name] = metric.value(content)[0]
+                results[metric] = metric_function(content)[0]
             else:
-                results[metric.name] = metric.value(content)
+                results[metric] = metric_function(content)
 
     return results

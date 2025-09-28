@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
 
 from app.schemas.schemas import BaseRequest, BaseResponse
-from app.core.metrics import polarity, sentiment, spam, style
 
 
 class MetricsResult(BaseModel):

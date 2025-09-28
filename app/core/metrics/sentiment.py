@@ -1,3 +1,4 @@
+import numpy
 import spacy
 
 from typing import Dict
@@ -5,6 +6,7 @@ from typing import Dict
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from app.core.metrics.style import classify_content
 from app.core.utils.samples import SAMPLE_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT
+
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
@@ -54,7 +56,7 @@ def score_sentiment(content: str) -> Dict[str, float]:
     
     # Label scores and round to 4 decimal places
     scores = numpy.mean([bart_scores, vader_scores], axis=0)
-    scores = dict(zip(SENTIMENT_CLASSES, [round(float(v), 4) for v in score]))
+    scores = dict(zip(SENTIMENT_CLASSES, [round(float(v), 4) for v in scores]))
 
     return scores
 
