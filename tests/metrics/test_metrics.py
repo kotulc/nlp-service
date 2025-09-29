@@ -36,7 +36,10 @@ def test_metrics_single_type(metric_type: str):
     data = response.json()
     assert "result" in data
     assert metric_type in data["result"]
-    assert len(data["result"]) == 1
+    
+    for metric in METRIC_TYPES.keys():
+        if metric != metric_type:
+            assert data["result"][metric] is None
 
 
 @pytest.mark.parametrize("metric_types", [
@@ -55,9 +58,10 @@ def test_metrics_multiple_types(metric_types: list):
     data = response.json()
     for metric in metric_types:
         assert metric in data["result"]
-    assert len(data["result"]) == len(metric_types)
+        assert len(data["result"][metric])
+
 
 if __name__ == "__main__":
-    # test_metrics()
+    test_metrics()
     test_metrics_single_type("diction")
     test_metrics_multiple_types([m for m in METRIC_TYPES][:2])

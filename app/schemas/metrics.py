@@ -1,6 +1,5 @@
-from enum import Enum
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional
+from typing import Dict
 
 from app.schemas.schemas import BaseRequest, BaseResponse
 
