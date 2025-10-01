@@ -11,18 +11,14 @@ SUMMARY_TYPES = {
 }
 
 
-def get_summary(content: str, summary: str, n_sections=3, top_n: int=10) -> tuple:
+def get_summary(content: str, summary: str, **kwargs) -> tuple:
     """Return a dictionary of entities, keywords, and related topic tags"""
+    summaries, scores = [], []
+    
     if summary in SUMMARY_TYPES:
         summary_function = SUMMARY_TYPES[summary]
+        summaries, scores = summary_function(content, **kwargs)
 
-        if summary == "outline":
-            scores = summary_function(content, n_sections=n_sections, top_n=1)
-            scores = [s[0] for s in scores]  # Unpack the section lists
-        else:
-            scores = summary_function(content, top_n=top_n)
+    # Return a dict of lists (summaries, scores)
+    return dict(summaries=summaries, scores=scores)
 
-        # Return a dict of lists (summaries, scores)
-        return dict(summaries=scores[0], scores=scores[1])
-    else:
-        return dict(summaries=[], scores=[])

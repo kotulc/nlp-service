@@ -19,7 +19,7 @@ HEADING_PROMPTS = settings.defaults.headings.model_dump()
 spacy_nlp = spacy.load("en_core_web_lg")
 
 
-def get_headings(content: str, heading="title", top_n: int=3) -> tuple[list, list]:
+def get_headings(content: str, heading: str, top_n: int) -> tuple[list, list]:
     """Generate a list of short heading summaries for the supplied content"""
     if not heading in HEADING_PROMPTS:
         raise ValueError(f"Supplied heading type '{heading}' is not a supported value.")
@@ -38,9 +38,9 @@ def get_headings(content: str, heading="title", top_n: int=3) -> tuple[list, lis
     # Add some more variety detached from the source content
     re_prompt = HEADING_PROMPTS[heading][-1]
     candidates += generate_summary(content=title_content, prompt=re_prompt, **generation_kwargs)
-    scores = composite_scores(content=content, candidates=candidates)
+    candidates, scores = composite_scores(content=content, candidates=candidates)
 
-    return scores[:top_n]
+    return candidates[:top_n], scores[:top_n]
 
 
 def get_title(content: str, top_n: int=3) -> tuple[list, list]:
@@ -58,7 +58,7 @@ def get_description(content: str, top_n: int=3) -> tuple[list, list]:
     return get_headings(content, heading="description", top_n=top_n)
 
 
-def get_outline(content: str, n_sections=3, top_n=3) -> list:
+def get_outline(content: str, n_sections: int=3) -> list:
     """Perform map-reduce sentence summarization to generate an outline"""
     # Split the supplied content string into individual sentences
     content_sentences = [s.text for s in spacy_nlp(content).sents]
@@ -76,7 +76,7 @@ def get_outline(content: str, n_sections=3, top_n=3) -> list:
     generation_kwargs = dict(format="list", max_new_tokens=32)
 
     # Generate candidate section descriptions
-    section_scores = []
+    section_summaries, section_scores = [], []
     for section in sections:
         # Generate candidate summaries for each prompt
         section_candidates = []
@@ -84,10 +84,11 @@ def get_outline(content: str, n_sections=3, top_n=3) -> list:
             section_candidates += generate_summary(content=section, prompt=prompt, **generation_kwargs)
         
         # Score and select the top_n descriptions for each section
-        scores = composite_scores(content=section, candidates=section_candidates)
-        section_scores.append(scores[:top_n])
+        candidates, scores = composite_scores(content=section, candidates=section_candidates)
+        section_summaries.append(candidates[0])
+        section_scores.append(scores[0])
 
-    return section_scores
+    return section_summaries, section_scores
 
 
 # Example usage and testing function
