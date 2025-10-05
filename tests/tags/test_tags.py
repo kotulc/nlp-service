@@ -54,8 +54,9 @@ def test_tags_top_n_limit(top_n):
     }
     response = client.post("/tags/", json=payload)
     assert response.status_code == 200
+    
     data = response.json()
-    tags = data["data"].get("related", [])
+    tags = data["result"].get("related", [])
     assert len(tags) <= top_n
 
 

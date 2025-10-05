@@ -6,10 +6,6 @@ from app.core.utils.relevance import composite_scores
 from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
 
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-
 
 # Extract module-level constants from settings
 settings = get_settings()

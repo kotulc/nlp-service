@@ -6,9 +6,6 @@ from app.schemas.schemas import get_response
 from app.schemas.summary import SummaryRequest, SummaryResponse
 
 
-# Define supported summary argument keys
-SUMMARY_ARGS = ('n_sections', 'top_n')
-
 # Define the router for metrics-related endpoints
 summary_types = list(SUMMARY_TYPES.keys())
 router = APIRouter(prefix="/summary", tags=summary_types)
@@ -39,19 +36,23 @@ async def post_summary(request: SummaryRequest):
 
 @router.post("/title", response_model=SummaryResponse)
 async def post_title(request: SummaryRequest):
-    return get_summary_response(request, summary_type='title')
+    request.summary = 'title'
+    return get_summary_response(request)
 
 
 @router.post("/subtitle", response_model=SummaryResponse)
 async def post_subtitle(request: SummaryRequest):
-    return get_summary_response(request, summary_type='subtitle')
+    request.summary = 'subtitle'
+    return get_summary_response(request)
 
 
 @router.post("/description", response_model=SummaryResponse)
 async def post_description(request: SummaryRequest):
-    return get_summary_response(request, summary_type='description')
+    request.summary = 'description'
+    return get_summary_response(request)
 
 
 @router.post("/outline", response_model=SummaryResponse)
 async def post_outline(request: SummaryRequest):
-    return get_summary_response(request, summary_type='outline')
+    request.summary = 'outline'
+    return get_summary_response(request)

@@ -36,6 +36,19 @@ def test_summary_type(summary_type):
     assert len(data["result"]["summaries"])
 
 
+@pytest.mark.parametrize("summary_type", list(SUMMARY_TYPES.keys()))
+def test_summary_routes(summary_type):
+    """Test each summary type individually"""
+    payload = {"content": "Test content for summary."}
+    response = client.post(f"/summary/{summary_type}/", json=payload)
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "result" in data
+    assert "summaries" in data["result"]
+    assert len(data["result"]["summaries"])
+
+
 @pytest.mark.parametrize("top_n", [1, 3, 5])
 def test_summary_top_n(top_n):
     """All returned results have length <= top_n"""
