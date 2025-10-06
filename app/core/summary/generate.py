@@ -1,13 +1,8 @@
-import json
-import pathlib
 import re
-import torch
-import transformers
-
-from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from app.config import get_settings
 from app.core.utils.samples import SAMPLE_TEXT
+from app.core.utils.models import get_models
 
 
 # Extract constants from settings
@@ -17,9 +12,8 @@ DEFAULT_TEMPLATE = settings.defaults.template
 DEFAULT_KWARGS = settings.defaults.transformers.model_dump()
 
 # Load the tokenizer and model
-tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
-model = AutoModelForCausalLM.from_pretrained(DEFAULT_MODEL, torch_dtype=torch.bfloat16, device_map="auto")
-generator = transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
+models = get_models()
+generator = models['generator']
 
 
 def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:

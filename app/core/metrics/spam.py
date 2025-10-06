@@ -5,12 +5,14 @@ from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from app.core.utils.samples import SPAM_TEXT, HAM_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
+from app.core.utils.models import get_models
 
 
 # Get pre-trained toxicity and spam detection models
-tokenizer = AutoTokenizer.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
-spam_classifier = AutoModelForSequenceClassification.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
-toxic_classifier = pipeline("text-classification", model="unitary/toxic-bert")
+models = get_models()
+tokenizer = models['tokenizer'] 
+spam_classifier = models['spam_classifier']
+toxic_classifier = models['toxic_classifier'] 
 
 
 def score_spam(content: str) -> float:

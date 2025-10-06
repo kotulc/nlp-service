@@ -1,9 +1,9 @@
 import numpy
 
 from textblob import TextBlob
-from transformers import pipeline
 
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
+from app.core.utils.models import get_models
 
 
 # Define elements of literary analysis
@@ -14,7 +14,8 @@ MODE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative
 TONE_LABELS = ['dogmatic', 'subjective', 'neutral', 'objective', 'impartial']
 
 # Define module-level variables
-zero_shot_pipe = pipeline(model='facebook/bart-large-mnli')
+models = get_models()
+zero_shot_pipe = models['zero_shot_pipe']
 
 
 def classify_content(content: str, labels: list, multi_label=False) -> list:

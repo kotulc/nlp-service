@@ -1,6 +1,3 @@
-from enum import Enum
-from typing import Dict
-
 from app.core.metrics import polarity, sentiment, spam, style
 
 
