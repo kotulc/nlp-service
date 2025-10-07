@@ -1,18 +1,13 @@
 import numpy
 import torch
 
-from transformers import pipeline
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
 from app.core.utils.samples import SPAM_TEXT, HAM_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_models
+from app.core.utils.models import get_spam, get_toxicity
 
 
 # Get pre-trained toxicity and spam detection models
-models = get_models()
-tokenizer = models['tokenizer'] 
-spam_classifier = models['spam_classifier']
-toxic_classifier = models['toxic_classifier'] 
+tokenizer, spam_classifier = get_spam()
+toxic_classifier = get_toxicity()
 
 
 def score_spam(content: str) -> float:

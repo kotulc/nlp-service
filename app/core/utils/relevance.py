@@ -4,12 +4,13 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from app.core.utils.models import get_acceptability, get_embedding
 
-# Load a model fine-tuned on the CoLA dataset fot linguistic acceptability scoring
-classifier = pipeline("text-classification", model="textattack/roberta-base-CoLA")
+# Load a model fine-tuned on the CoLA dataset for linguistic acceptability scoring
+classifier = get_acceptability()
 
 # Define module level variables
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+embedding_model = get_embedding()
 
 
 def composite_scores(content: str, candidates: list[str]) -> tuple:

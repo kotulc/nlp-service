@@ -1,19 +1,20 @@
 import numpy
+import spacy
 
 from typing import Dict
 
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
 from app.core.metrics.style import classify_content
 from app.core.utils.samples import SAMPLE_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT
-from app.core.utils.models import get_models
 
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
 
 # Get module level variables
-models = get_models()
-vader_analyzer = models['vader_analyzer']
-spacy_nlp = models['spacy_nlp']
+vader_analyzer = SentimentIntensityAnalyzer()
+spacy_nlp = spacy.load("en_core_web_lg")
 
 
 def content_sentiment(content: str) -> dict:

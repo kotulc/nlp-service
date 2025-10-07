@@ -1,13 +1,14 @@
+import spacy
+
+from textblob import TextBlob
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_models
 
 
 # Get module level variables
-models = get_models()
-vader_analyzer = models['vader_analyzer']
-text_blob = models['text_blob']
-spacy_nlp = models['spacy_nlp']
-
+vader_analyzer = SentimentIntensityAnalyzer()
+spacy_nlp = spacy.load("en_core_web_lg")
 
 
 def content_polarity(content: str) -> dict:
@@ -15,7 +16,7 @@ def content_polarity(content: str) -> dict:
     doc = spacy_nlp(content)
 
     # For both sets of scores: -1 most extreme negative, +1 most extreme positive
-    blob_score = text_blob(doc.text).sentiment.polarity
+    blob_score = TextBlob(doc.text).sentiment.polarity
     vader_score = vader_analyzer.polarity_scores(doc.text)['compound']
 
     return round(blob_score, 4), round(vader_score, 4)
@@ -30,7 +31,7 @@ def sentence_polarity(content: str) -> list:
         # For both sets of scores: -1 most extreme negative, +1 most extreme positive
         sentence_list.append(sentence.text)
 
-        blob_score = text_blob(sentence.text).sentiment.polarity
+        blob_score = TextBlob(sentence.text).sentiment.polarity
         blob_list.append(round(blob_score, 4))
 
         vader_score = vader_analyzer.polarity_scores(sentence.text)['compound']

@@ -12,11 +12,12 @@ from app.core.utils.models import get_models
 async def lifespan(app: FastAPI):
     # Initialize the database connection
     init_database()
+    # Load and cache shared application models 
+    get_models()
     yield
 
 
-# Load and cache shared application models and settings
-models = get_models()
+# Load application settings
 settings = get_settings()
 
 # Initialize FastAPI app

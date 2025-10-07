@@ -1,9 +1,9 @@
+import spacy
 import numpy
 
 from app.core.summary.generate import generate_summary
 from app.core.utils.relevance import composite_scores
 from app.core.utils.samples import SAMPLE_TEXT
-from app.core.utils.models import get_models
 from app.config import get_settings
 
 
@@ -12,8 +12,7 @@ settings = get_settings()
 HEADING_PROMPTS = settings.defaults.headings.model_dump()
 
 # Define module-level variables
-models = get_models()
-spacy_nlp = models['spacy_nlp']
+spacy_nlp = spacy.load("en_core_web_lg")
 
 
 def get_headings(content: str, heading: str, top_n: int) -> tuple[list, list]:
@@ -98,7 +97,7 @@ def demo_headings():
         print(f"\nGenerated {heading}s:", result)
 
     print("\n=== Generate Outline ===")
-    result = get_outline(SAMPLE_TEXT, n_sections=n_sections, top_n=top_n)
+    result = get_outline(SAMPLE_TEXT, n_sections=n_sections)
     for i in range(n_sections):
         section_summaries = [section[i] for section in result if len(section) > i]
         print(f"\nOutline candidate {i + 1}:")

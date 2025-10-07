@@ -3,7 +3,7 @@ import numpy
 from textblob import TextBlob
 
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_models
+from app.core.utils.models import get_classifier
 
 
 # Define elements of literary analysis
@@ -14,14 +14,13 @@ MODE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative
 TONE_LABELS = ['dogmatic', 'subjective', 'neutral', 'objective', 'impartial']
 
 # Define module-level variables
-models = get_models()
-zero_shot_pipe = models['zero_shot_pipe']
+classifier = get_classifier()
 
 
 def classify_content(content: str, labels: list, multi_label=False) -> list:
     """Return the zero-shot classification scores in the order of the supplied labels"""
     # NOTE: If more than one label can be correct, set multi_label=True
-    result = zero_shot_pipe(content, candidate_labels=labels, multi_label=multi_label)
+    result = classifier(content, candidate_labels=labels, multi_label=multi_label)
     scores = {label: score for label, score in zip(result['labels'], result['scores'])} 
 
     # Return scores in the order the labels were provided

@@ -1,9 +1,14 @@
+import spacy
+import yake
+
+from keybert import KeyBERT
+
 from app.core.summary.generate import generate_summary
 from app.core.utils.relevance import maximal_marginal_relevance, semantic_similarity
 from app.core.utils.samples import SAMPLE_TEXT
 
 from app.config import get_settings
-from app.core.utils.models import get_models
+from app.core.utils.models import get_embedding
 
 
 # Define module level constants
@@ -11,11 +16,17 @@ settings = get_settings()
 TAG_PROMPTS = settings.defaults.tags
 
 # Get module level variables
-models = get_models()
-embedding_model = models['embedding_model']
-key_bert = models['key_bert']
-spacy_nlp = models['spacy_nlp']
-yake_extractor = models['yake_extractor']
+embedding_model = get_embedding()
+key_bert = KeyBERT('all-MiniLM-L6-v2')
+spacy_nlp = spacy.load("en_core_web_lg")
+yake_extractor = yake.KeywordExtractor(
+    lan="en", 
+    n=1, 
+    dedupLim=0.9, 
+    dedupFunc="seqm", 
+    top=20, 
+    features=None
+)
 
 
 def extract_entities(content: str, top_n: int=5) -> list:
