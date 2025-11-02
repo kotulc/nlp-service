@@ -8,7 +8,6 @@ from app.core.utils.relevance import maximal_marginal_relevance, semantic_simila
 from app.core.utils.samples import SAMPLE_TEXT
 
 from app.config import get_settings
-from app.core.utils.models import get_embedding
 
 
 # Define module level constants
@@ -16,7 +15,6 @@ settings = get_settings()
 TAG_PROMPTS = settings.defaults.tags
 
 # Get module level variables
-embedding_model = get_embedding()
 key_bert = KeyBERT('all-MiniLM-L6-v2')
 spacy_nlp = spacy.load("en_core_web_lg")
 yake_extractor = yake.KeywordExtractor(

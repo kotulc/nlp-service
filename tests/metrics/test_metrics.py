@@ -58,7 +58,7 @@ def test_metrics_multiple_types(metric_types: list):
     data = response.json()
     for metric in metric_types:
         assert metric in data["result"]
-        assert data["result"][metric]
+        assert isinstance(data["result"][metric], float)
 
 
 if __name__ == "__main__":

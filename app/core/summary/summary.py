@@ -1,5 +1,3 @@
-from enum import Enum
-
 from app.core.summary.headings import get_title, get_subtitle, get_description, get_outline
 
 

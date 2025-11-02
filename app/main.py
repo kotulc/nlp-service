@@ -5,15 +5,12 @@ from app.database import init_database
 from app.routes import metrics, summary, tags
 
 from app.config import get_settings
-from app.core.utils.models import get_models
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize the database connection
     init_database()
-    # Load and cache shared application models 
-    get_models()
     yield
 
 
