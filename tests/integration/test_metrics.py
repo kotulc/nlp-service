@@ -1,15 +1,14 @@
 import pytest
+
 from fastapi.testclient import TestClient
 from app.main import app
 from app.core.metrics.metrics import METRIC_TYPES
 
 
-client = TestClient(app)
-
-
 def test_metrics():
     """Confirm only 'content' argument is required"""
     payload = {"content": "Test content for metrics."}
+    client = TestClient(app)
     response = client.post("/metrics/", json=payload)
     assert response.status_code == 200
 
@@ -29,6 +28,7 @@ def test_metrics_single_type(metric_type: str):
         "content": "Test content for metrics.",
         "metrics": [metric_type]
     }
+    client = TestClient(app)
     response = client.post("/metrics/", json=payload)
     assert response.status_code == 200
 
@@ -52,13 +52,14 @@ def test_metrics_multiple_types(metric_types: list):
         "content": "Test content for metrics.",
         "metrics": metric_types
     }
+    client = TestClient(app)
     response = client.post("/metrics/", json=payload)
     assert response.status_code == 200
 
     data = response.json()
     for metric in metric_types:
         assert metric in data["result"]
-        assert isinstance(data["result"][metric], float)
+        assert isinstance(data["result"][metric], dict)
 
 
 if __name__ == "__main__":

@@ -44,7 +44,7 @@ class DatabaseSettings(BaseSettings):
     connect_args: dict = {"check_same_thread": False}
 
 
-# Define nested constants classes
+# Define nested settings classes
 class HeadingsSettings(BaseSettings):
     """Define default heading prompts"""
     title: list[str] = Field(default=HEADING_PROMPTS["title"], min_length=4)
