@@ -2,6 +2,7 @@ import spacy
 import numpy
 
 from app.core.summary.generate import generate_summary
+from app.core.utils.models import get_spacy
 from app.core.utils.relevance import composite_scores
 from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
@@ -12,7 +13,7 @@ settings = get_settings()
 HEADING_PROMPTS = settings.defaults.headings.model_dump()
 
 # Define module-level variables
-spacy_nlp = spacy.load("en_core_web_lg")
+spacy_nlp = get_spacy()
 
 
 def get_headings(content: str, heading: str, top_n: int) -> tuple[list, list]:
