@@ -66,7 +66,7 @@ def get_keybert():
     if settings.debug:
         return lambda *args, **kwargs: [("mock keyword", 1.0)]
     from keybert import KeyBERT
-    return KeyBERT('all-MiniLM-L6-v2')
+    return KeyBERT('all-MiniLM-L6-v2').extract_keywords
 
 
 @lru_cache(maxsize=1)
@@ -123,4 +123,4 @@ def get_yake():
         dedupFunc="seqm", 
         top=20, 
         features=None
-    )
+    ).extract_keywords

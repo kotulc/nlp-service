@@ -31,7 +31,7 @@ def extract_entities(content: str, top_n: int=5) -> list:
 def extract_keywords(content: str, top_n: int=10) -> list:
     """Extract entities and return the top_n most relevant results"""
     # Bert keywords
-    bert_keywords = key_bert.extract_keywords(
+    bert_keywords = key_bert(
         content, 
         keyphrase_ngram_range=(1, 1), 
         stop_words='english', 
@@ -41,7 +41,7 @@ def extract_keywords(content: str, top_n: int=10) -> list:
     bert_keywords = [phrase for phrase, score in bert_keywords]
    
     # Yake keywords (adds recall)
-    yake_keywords = yake_extractor.extract_keywords(content)
+    yake_keywords = yake_extractor(content)
     yake_keywords = [phrase for phrase, score in yake_keywords]
 
     # Combine all keywords and compare source relevance with cosine similiarty
