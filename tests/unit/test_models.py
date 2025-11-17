@@ -16,9 +16,6 @@ class Acceptability(BaseModel):
 class Classifier(BaseModel):
     results: Dict[str, list]
 
-class Embedding(BaseModel):
-    results: list
-
 class Generator(BaseModel):
     results: str
 
@@ -60,8 +57,6 @@ def test_models(monkeypatch, getter, data_model):
     monkeypatch.setattr(models.settings, "debug", False)
     getter.cache_clear()
     real_func = getter()
-    assert callable(real_func)
-    
     real_result = real_func(["test"])
     data_model(results=real_result)
 
@@ -88,9 +83,6 @@ def test_models_debug(monkeypatch, getter, data_model):
     monkeypatch.setattr(models.settings, "debug", True)
     getter.cache_clear()
     mock_func = getter()
-    assert callable(mock_func)
-
-    # Verify that the 
     mock_result = mock_func("test")
     data_model(results=mock_result)
 

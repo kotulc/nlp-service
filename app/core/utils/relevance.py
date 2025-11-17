@@ -22,8 +22,8 @@ def composite_scores(content: str, candidates: list[str]) -> tuple:
     linguistic_scores = numpy.array([classifier(candidate)[0]['score'] for candidate in candidates])
 
     # Select the candidate with the highest compound (content similarity * linguistic) scores
-    content_embedding = embedding_model.encode([content])
-    candidate_embeddings = embedding_model.encode(candidates)
+    content_embedding = embedding_model([content])
+    candidate_embeddings = embedding_model(candidates)
     similarity_scores = cosine_similarity(content_embedding, candidate_embeddings).flatten()
     composite_scores = linguistic_scores * similarity_scores
     candidate_scores = list(zip(candidates, composite_scores.tolist()))
@@ -37,8 +37,8 @@ def composite_scores(content: str, candidates: list[str]) -> tuple:
 def maximal_marginal_relevance(content: str, candidates: list, sim_lambda=0.5, top_n=10) -> tuple:
     """Select candidate words using maximal marginal relevance scoring"""
     # Create embeddings
-    content_embedding = embedding_model.encode([content])
-    candidate_embeddings = embedding_model.encode(candidates)
+    content_embedding = embedding_model([content])
+    candidate_embeddings = embedding_model(candidates)
 
     # Select the candidate with the highest similarity
     similarities = cosine_similarity(content_embedding, candidate_embeddings).flatten()
@@ -71,8 +71,8 @@ def maximal_marginal_relevance(content: str, candidates: list, sim_lambda=0.5, t
 def semantic_similarity(content: str, candidates: list) -> tuple:
     """Rank words by semantic similarity to text using embeddings"""
     # Create embeddings
-    content_embedding = embedding_model.encode([content])
-    candidate_embeddings = embedding_model.encode(candidates)
+    content_embedding = embedding_model([content])
+    candidate_embeddings = embedding_model(candidates)
     
     # Calculate cosine similarity and create word-score pairs
     similarities = cosine_similarity(content_embedding, candidate_embeddings)[0]
