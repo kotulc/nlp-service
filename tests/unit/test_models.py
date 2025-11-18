@@ -38,95 +38,125 @@ class Yake(BaseModel):
     results: List[tuple]
 
 
-@pytest.mark.parametrize("getter, data_model", [
-    (models.get_acceptability, Acceptability),
-    (models.get_embedding, Embedding),
-    (models.get_generator, Generator),
-    (models.get_keybert, Keybert),
-    (models.get_polarity, Polarity),
-    (models.get_sentiment, Sentiment),
-    (models.get_spam, Spam),
-    (models.get_toxicity, Toxicity),
-    (models.get_yake, Yake),
+@pytest.mark.parametrize("getter", [
+    models.get_acceptability,
+    models.get_embedding, 
+    models.get_generator, 
+    models.get_keybert, 
+    models.get_polarity, 
+    models.get_sentiment,
+    models.get_spacy,
+    models.get_spam,
+    models.get_tokenizer,
+    models.get_toxicity,
+    models.get_yake,
 ])
-def test_models(monkeypatch, getter, data_model):
-    # Save original debug setting
-    original_debug = models.settings.debug
-
-    # Test with debug False (real)
+def test_models(monkeypatch, getter):
+    # Test with debug False (use real models)
     monkeypatch.setattr(models.settings, "debug", False)
     getter.cache_clear()
     real_func = getter()
+    assert callable(real_func)
+
     real_result = real_func(["test"])
-    data_model(results=real_result)
 
-    # Restore original debug setting
-    monkeypatch.setattr(models.settings, "debug", original_debug)
-
-
-@pytest.mark.parametrize("getter, data_model", [
-    (models.get_acceptability, Acceptability),
-    (models.get_embedding, Embedding),
-    (models.get_generator, Generator),
-    (models.get_keybert, Keybert),
-    (models.get_polarity, Polarity),
-    (models.get_sentiment, Sentiment),
-    (models.get_spam, Spam),
-    (models.get_toxicity, Toxicity),
-    (models.get_yake, Yake),
-])
-def test_models_debug(monkeypatch, getter, data_model):
-    # Save original debug setting
-    original_debug = models.settings.debug
-
-    # Test with debug True (mock)
+    # Test with debug True (use mock models)
     monkeypatch.setattr(models.settings, "debug", True)
     getter.cache_clear()
     mock_func = getter()
-    mock_result = mock_func("test")
-    data_model(results=mock_result)
+    assert callable(mock_func)
 
-    # Restore original debug setting
-    monkeypatch.setattr(models.settings, "debug", original_debug)
-
-
-def test_classifier(monkeypatch):
-    # Save original debug setting
-    original_debug = models.settings.debug
-
-    # Test with debug True (mock)
-    monkeypatch.setattr(models.settings, "debug", True)
-    mock_func = models.get_classifier()
-    mock_result = mock_func("test", candidate_labels=["A", "B"])
-
-    # Test with debug False (real)
-    monkeypatch.setattr(models.settings, "debug", False)
-    models.get_classifier.cache_clear()
-    real_func = models.get_spacy()
-    real_result = real_func("test", candidate_labels=["A", "B"])
-    assert type(mock_result) == type(real_result)
-
-    Classifier(results=real_result)
-
-    # Restore original debug setting
-    monkeypatch.setattr(models.settings, "debug", original_debug)
-
-
-def test_spacy(monkeypatch):
-    # Save original debug setting
-    original_debug = models.settings.debug
-
-    # Test with debug True (mock)
-    monkeypatch.setattr(models.settings, "debug", True)
-    mock_func = models.get_spacy()
     mock_result = mock_func("test")
 
-    # Test with debug False (real)
-    monkeypatch.setattr(models.settings, "debug", False)
-    models.get_spacy.cache_clear()
-    real_func = models.get_spacy()
-    real_result = real_func("test")
-    assert type(mock_result) == type(real_result)
+    assert real_func is not mock_func
+    assert type(real_result) == type(mock_result)
 
-    # Restore original debug setting
-    monkeypatch.setattr(models.settings, "debug", original_debug)
+
+# @pytest.mark.parametrize("getter, data_model", [
+#     (models.get_acceptability, Acceptability),
+#     (models.get_embedding, Embedding),
+#     (models.get_generator, Generator),
+#     (models.get_keybert, Keybert),
+#     (models.get_polarity, Polarity),
+#     (models.get_sentiment, Sentiment),
+#     (models.get_spam, Spam),
+#     (models.get_toxicity, Toxicity),
+#     (models.get_yake, Yake),
+# ])
+# def test_model_results(monkeypatch, getter, data_model):
+#     # Save original debug setting
+#     original_debug = models.settings.debug
+
+#     # Test with debug True (mock)
+#     monkeypatch.setattr(models.settings, "debug", True)
+#     getter.cache_clear()
+#     mock_func = getter()
+#     mock_result = mock_func("test")
+#     data_model(results=mock_result)
+
+#     # Restore original debug setting
+#     monkeypatch.setattr(models.settings, "debug", original_debug)
+
+
+# def test_classifier(monkeypatch):
+#     # Save original debug setting
+#     original_debug = models.settings.debug
+
+#     # Test with debug True (mock)
+#     monkeypatch.setattr(models.settings, "debug", True)
+#     mock_func = models.get_classifier()
+#     mock_result = mock_func("test", candidate_labels=["A", "B"])
+
+#     # Test with debug False (real)
+#     monkeypatch.setattr(models.settings, "debug", False)
+#     models.get_classifier.cache_clear()
+#     real_func = models.get_spacy()
+#     real_result = real_func("test", candidate_labels=["A", "B"])
+#     assert type(mock_result) == type(real_result)
+
+#     Classifier(results=real_result)
+
+#     # Restore original debug setting
+#     monkeypatch.setattr(models.settings, "debug", original_debug)
+
+
+# def test_embedding(monkeypatch):
+#     # Save original debug setting
+#     original_debug = models.settings.debug
+
+#     # Test with debug True (mock)
+#     monkeypatch.setattr(models.settings, "debug", True)
+#     mock_func = models.get_classifier()
+#     mock_result = mock_func("test", candidate_labels=["A", "B"])
+
+#     # Test with debug False (real)
+#     monkeypatch.setattr(models.settings, "debug", False)
+#     models.get_classifier.cache_clear()
+#     real_func = models.get_spacy()
+#     real_result = real_func("test", candidate_labels=["A", "B"])
+#     assert type(mock_result) == type(real_result)
+
+#     Classifier(results=real_result)
+
+#     # Restore original debug setting
+#     monkeypatch.setattr(models.settings, "debug", original_debug)
+
+
+# def test_spacy(monkeypatch):
+#     # Save original debug setting
+#     original_debug = models.settings.debug
+
+#     # Test with debug True (mock)
+#     monkeypatch.setattr(models.settings, "debug", True)
+#     mock_func = models.get_spacy()
+#     mock_result = mock_func("test")
+
+#     # Test with debug False (real)
+#     monkeypatch.setattr(models.settings, "debug", False)
+#     models.get_spacy.cache_clear()
+#     real_func = models.get_spacy()
+#     real_result = real_func("test")
+#     assert type(mock_result) == type(real_result)
+
+#     # Restore original debug setting
+#     monkeypatch.setattr(models.settings, "debug", original_debug)

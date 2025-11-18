@@ -19,9 +19,9 @@ from app.config import get_settings
 
 # Extract constants from settings
 settings = get_settings()
-DEFAULT_MODEL = settings.defaults.models.default
-DEFAULT_TEMPLATE = settings.defaults.template
-DEFAULT_KWARGS = settings.defaults.transformers.model_dump()
+DEFAULT_MODEL = settings.models.generative
+DEFAULT_TEMPLATE = settings.models.template
+DEFAULT_KWARGS = settings.models.transformers.model_dump()
 
 
 class ModelLoader:
@@ -29,7 +29,8 @@ class ModelLoader:
         self.model_key = model_key
         self.default_callable = default_callable
         self.debug_callable = debug_callable if default_callable else default_callable
-        self.remote_endpoint = getattr(settings.models.endpoints, model_key, None)
+        # self.remote_endpoint = getattr(settings.models.endpoints, model_key, None)
+        self.remote_endpoint = None
 
     def __call__(self, *args, **kwargs):
         # If a remote endpoint is set, route the request there
@@ -65,7 +66,7 @@ def get_classifier():
     """Return the zero-shot classification pipeline or a mock function in debug mode"""
     return ModelLoader(
         model_key="classifier",
-        default_callable=pipeline(model='facebook/bart-large-mnli')
+        default_callable=pipeline(model='facebook/bart-large-mnli'),
         debug_callable=lambda *args, **kwargs: {"labels": ["mock"], "scores": [1.0]}
     )
 
@@ -75,7 +76,7 @@ def get_embedding():
     """Return the language embedding model or a mock function in debug mode"""
     return ModelLoader(
         model_key="embedding",
-        default_callable=SentenceTransformer('all-MiniLM-L6-v2').encode
+        default_callable=SentenceTransformer('all-MiniLM-L6-v2').encode,
         debug_callable=lambda *args, **kwargs: numpy.zeros((1, 384))
     )
 
@@ -88,7 +89,7 @@ def get_generator():
     model = AutoModelForCausalLM.from_pretrained(DEFAULT_MODEL, torch_dtype=torch.bfloat16, device_map="auto")
     return ModelLoader(
         model_key="generator",
-        default_callable=transformers.pipeline("text-generation", model=model, tokenizer=tokenizer)
+        default_callable=transformers.pipeline("text-generation", model=model, tokenizer=tokenizer),
         debug_callable=lambda *args, **kwargs: "Mock generated content"
     )
 
@@ -98,7 +99,7 @@ def get_keybert():
     """Return the KeyBERT model or a mock function in debug mode"""
     return ModelLoader(
         model_key="keybert",
-        default_callable=KeyBERT('all-MiniLM-L6-v2').extract_keywords
+        default_callable=KeyBERT('all-MiniLM-L6-v2').extract_keywords,
         debug_callable=lambda *args, **kwargs: [("mock keyword", 1.0)]
     )
 
@@ -108,8 +109,8 @@ def get_polarity():
     """Return the TextBlob polarity model or a mock function in debug mode"""
     return ModelLoader(
         model_key="polarity",
-        default_callable=TextBlob
-        debug_callable=lambda x: {'polarity': 0.0, 'subjectivity': 0.0}
+        default_callable=TextBlob,
+        debug_callable=lambda *args, **kwargs: {'polarity': 0.0, 'subjectivity': 0.0}
     )
 
 
@@ -118,8 +119,8 @@ def get_sentiment():
     """Return the vader sentiment model or a mock function in debug mode"""
     return ModelLoader(
         model_key="sentiment",
-        default_callable=SentimentIntensityAnalyzer()
-        debug_callable=lambda x: {'neg': 0.5, 'neu': 0.5, 'pos': 0.5, 'compound': -0.5}
+        default_callable=SentimentIntensityAnalyzer(),
+        debug_callable=lambda *args, **kwargs: {'neg': 0.5, 'neu': 0.5, 'pos': 0.5, 'compound': -0.5}
     )
 
 
@@ -128,8 +129,8 @@ def get_spacy():
     """Return the spacy NLP model or a blank model in debug mode"""
     return ModelLoader(
         model_key="spacy",
-        default_callable=spacy.load("en_core_web_lg")
-        debug_callable=lambda x: spacy.blank("en")
+        default_callable=spacy.load("en_core_web_lg"),
+        debug_callable=lambda *args, **kwargs: spacy.blank("en")
     )
 
 
@@ -138,8 +139,8 @@ def get_spam():
     """Return the spam classifier tokenizer and model or a mock function in debug mode"""
     return ModelLoader(
         model_key="spam",
-        default_callable=AutoModelForSequenceClassification.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
-        debug_callable=lambda x: [{'label': 'Spam', 'score': 0.9}]
+        default_callable=AutoModelForSequenceClassification.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2"),
+        debug_callable=lambda *args, **kwargs: [{'label': 'Spam', 'score': 0.9}]
     )
 
 
@@ -148,8 +149,8 @@ def get_tokenizer():
     """Return the spam classifier tokenizer and model or a mock function in debug mode"""
     return ModelLoader(
         model_key="tokenizer",
-        default_callable=tokenizer = AutoTokenizer.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
-        debug_callable=lambda x: [{'label': 'Spam', 'score': 0.9}]
+        default_callable=AutoTokenizer.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2"),
+        debug_callable=lambda *args, **kwargs: [{'label': 'Spam', 'score': 0.9}]
     )
 
 
@@ -158,8 +159,8 @@ def get_toxicity():
     """Return the toxicity classifier pipeline or a mock function in debug mode"""
     return ModelLoader(
         model_key="tokenizer",
-        default_callable=pipeline("text-classification", model="unitary/toxic-bert")
-        debug_callable=lambda x: [{'label': 'Toxic', 'score': 0.9}]
+        default_callable=pipeline("text-classification", model="unitary/toxic-bert"),
+        debug_callable=lambda *args, **kwargs: [{'label': 'Toxic', 'score': 0.9}]
     )
 
 
@@ -175,6 +176,6 @@ def get_yake():
             dedupFunc="seqm", 
             top=20, 
             features=None
-        ).extract_keywords
-        debug_callable=lambda x: [("mock keyword", 1.0)]
+        ).extract_keywords,
+        debug_callable=lambda *args, **kwargs: [("mock keyword", 1.0)]
     )

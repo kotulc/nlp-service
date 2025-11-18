@@ -54,9 +54,10 @@ class HeadingsSettings(BaseSettings):
 
 class ModelSettings(BaseSettings):
     """Define available and default model types"""
-    default: str = "google/gemma-3-1b-it"
-    gemma: str = "google/gemma-3-1b-it"
-    phi4: str = "microsoft/Phi-4-mini-instruct" 
+    endpoints: dict = Field(default={})
+    # generative: str = "microsoft/Phi-4-mini-instruct" 
+    generative: str = "google/gemma-3-1b-it"
+
 
 
 class TransformersSettings(BaseSettings):
@@ -70,13 +71,16 @@ class TransformersSettings(BaseSettings):
 
 
 # Define function default argument settings yaml class
-class DefaultSettings(BaseSettings):
+class ModelSettings(BaseSettings):
     """Define default keyword argument for core functions"""
     headings: HeadingsSettings = Field(default_factory=HeadingsSettings)
     tags: list[str] = Field(default=TAGS_PROMPTS, min_length=3)
     template: str = Field(default="{prompt}:\n\nText: {content}\n\n{delimiter}") 
     models: ModelSettings = Field(default_factory=ModelSettings)
     transformers: TransformersSettings = Field(default_factory=TransformersSettings)
+    endpoints: dict = Field(default={})
+    # generative: str = "microsoft/Phi-4-mini-instruct" 
+    generative: str = "google/gemma-3-1b-it"
     
     @classmethod
     def from_yaml(cls, path: str):
@@ -96,11 +100,11 @@ class ApplicationSettings(BaseSettings):
 
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
 
-    if Path("app/defaults.yaml").exists():
+    if Path("app/models.yaml").exists():
         # If the defaults.yaml file exists, load default settings from it
-        defaults: DefaultSettings = DefaultSettings.from_yaml("app/defaults.yaml")
+        models: ModelSettings = ModelSettings.from_yaml("app/models.yaml")
     else:
-        defaults: DefaultSettings = Field(default_factory=DefaultSettings)
+        models: ModelSettings = Field(default_factory=ModelSettings)
 
 
 @lru_cache()

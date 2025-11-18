@@ -22,10 +22,7 @@ tags:
 
 template: "{prompt}:\n\nText: {content}\n\n{delimiter}"
 
-models: 
-  default: google/gemma-3-1b-it
-  gemma: google/gemma-3-1b-it
-  phi4: microsoft/Phi-4-mini-instruct
+generative: google/gemma-3-1b-it
 
 transformers:
   max_new_tokens: 32
