@@ -4,13 +4,13 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from app.core.utils.models import get_acceptability, get_embedding
+from app.core.utils.models import get_acceptability_model, get_embedding_model
 
 # Load a model fine-tuned on the CoLA dataset for linguistic acceptability scoring
-classifier = get_acceptability()
+classifier = get_acceptability_model()
 
 # Define module level variables
-embedding_model = get_embedding()
+embedding_model = get_embedding_model()
 
 
 def composite_scores(content: str, candidates: list[str]) -> tuple:

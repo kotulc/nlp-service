@@ -2,7 +2,7 @@ import spacy
 import numpy
 
 from app.core.summary.generate import generate_summary
-from app.core.utils.models import get_spacy
+from app.core.utils.models import get_document_model
 from app.core.utils.relevance import composite_scores
 from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
@@ -13,7 +13,7 @@ settings = get_settings()
 HEADING_PROMPTS = settings.defaults.headings.model_dump()
 
 # Define module-level variables
-spacy_nlp = get_spacy()
+doc_model = get_document_model()
 
 
 def get_headings(content: str, heading: str, top_n: int) -> tuple[list, list]:
@@ -58,7 +58,7 @@ def get_description(content: str, top_n: int=3) -> tuple[list, list]:
 def get_outline(content: str, n_sections: int=3) -> list:
     """Perform map-reduce sentence summarization to generate an outline"""
     # Split the supplied content string into individual sentences
-    content_sentences = [s.text for s in spacy_nlp(content).sents]
+    content_sentences = [s.text for s in doc_model(content).sents]
 
     if len(content_sentences) == 0:
         raise ValueError("Supplied content string must contain one or more sentences.")

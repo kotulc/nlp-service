@@ -1,6 +1,6 @@
 from app.core.summary.generate import generate_summary
 from app.core.utils.relevance import maximal_marginal_relevance, semantic_similarity
-from app.core.utils.models import get_spacy, get_keybert, get_yake
+from app.core.utils.models import get_document_model, get_keybert, get_yake
 from app.core.utils.samples import SAMPLE_TEXT
 
 from app.config import get_settings
@@ -12,14 +12,14 @@ TAG_PROMPTS = settings.defaults.tags
 
 # Get module level variables
 key_bert = get_keybert()
-spacy_nlp = get_spacy()
+doc_model = get_document_model()
 yake_extractor = get_yake()
 
 
 def extract_entities(content: str, top_n: int=5) -> list:
     """Extract entities and return the top_n results"""
     # Extract entity tags from spacy pipeline
-    entities = list({entity.text.strip() for entity in spacy_nlp(content).ents})
+    entities = list({entity.text.strip() for entity in doc_model(content).ents})
 
     if len(entities):
         entities, scores = semantic_similarity(content, entities)

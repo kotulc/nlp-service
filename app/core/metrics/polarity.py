@@ -1,16 +1,16 @@
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_spacy, get_sentiment, get_polarity
+from app.core.utils.models import get_document_model, get_sentiment_model, get_polarity_model
 
 
 # Get module level variables
-text_blob = get_polarity()
-vader_analyzer = get_sentiment()
-spacy_nlp = get_spacy()
+text_blob = get_polarity_model()
+vader_analyzer = get_sentiment_model()
+doc_model = get_document_model()
 
 
 def content_polarity(content: str) -> dict:
     """Compute blob and vader polarity for the supplied string"""
-    doc = spacy_nlp(content)
+    doc = doc_model(content)
 
     # For both sets of scores: -1 most extreme negative, +1 most extreme positive
     blob_score = text_blob(doc.text).sentiment.polarity
@@ -21,7 +21,7 @@ def content_polarity(content: str) -> dict:
 
 def sentence_polarity(content: str) -> list:
     """Compute blob and vader polarity for each sentence in the supplied string"""
-    doc = spacy_nlp(content)
+    doc = doc_model(content)
 
     sentence_list, blob_list, vader_list = [], [], []
     for sentence in doc.sents:

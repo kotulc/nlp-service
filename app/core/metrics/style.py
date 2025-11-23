@@ -3,7 +3,7 @@ import numpy
 from textblob import TextBlob
 
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_classifier
+from app.core.utils.models import get_classifier_model
 
 
 # Define elements of literary analysis
@@ -14,7 +14,7 @@ MODE_LABELS = ['expository', 'descriptive', 'persuasive', 'narrative', 'creative
 TONE_LABELS = ['dogmatic', 'subjective', 'neutral', 'objective', 'impartial']
 
 # Define module-level variables
-classifier = get_classifier()
+classifier = get_classifier_model()
 
 
 def classify_content(content: str, labels: list, multi_label=False) -> list:

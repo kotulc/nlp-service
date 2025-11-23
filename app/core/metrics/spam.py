@@ -2,12 +2,12 @@ import numpy
 import torch
 
 from app.core.utils.samples import SPAM_TEXT, HAM_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_spam, get_toxicity
+from app.core.utils.models import spam_score, get_toxicity_model
 
 
 # Get pre-trained toxicity and spam detection models
-tokenizer, spam_classifier = get_spam()
-toxic_classifier = get_toxicity()
+tokenizer, spam_classifier = get_spam_model()
+toxic_classifier = get_toxicity_model()
 
 
 def score_spam(content: str) -> float:
@@ -42,15 +42,15 @@ def demo_spam():
     print("\n== Spam Classification ===")
     for label, content in zip(content_labels, content_strings):
         # Get predicted labels and map labels to class names
-        spam_score = score_spam(content)
-        label = "Not Spam" if spam_score < 0.5 else "Spam"
-        prediction = int(numpy.argmax(spam_score))
+        score = spam_score(content)
+        label = "Not Spam" if score < 0.5 else "Spam"
+        prediction = int(numpy.argmax(score))
         print(f"\n{label.capitalize()} text: {content}\nPrediction: {label}")
         
-        print("Spam score:", spam_score)
+        print("Spam score:", score)
         
-        toxicity_score = score_toxicity(content)
-        print("Toxicity score:", toxicity_score)
+        score = get_toxicity_model(content)
+        print("Toxicity score:", score)
 
 
 if __name__ == "__main__":

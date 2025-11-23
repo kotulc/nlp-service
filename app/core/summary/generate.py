@@ -2,7 +2,7 @@ import re
 
 from app.config import get_settings
 from app.core.utils.samples import SAMPLE_TEXT
-from app.core.utils.models import get_generator
+from app.core.utils.models import get_generative_model
 
 
 # Extract constants from settings
@@ -12,7 +12,7 @@ DEFAULT_TEMPLATE = settings.defaults.template
 DEFAULT_KWARGS = settings.defaults.transformers.model_dump()
 
 # Load the tokenizer and model
-generator = get_generator()
+generator = get_generative_model()
 
 
 def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:

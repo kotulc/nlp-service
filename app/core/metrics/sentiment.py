@@ -4,20 +4,20 @@ from typing import Dict
 
 from app.core.metrics.style import classify_content
 from app.core.utils.samples import SAMPLE_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT
-from app.core.utils.models import get_spacy, get_sentiment
+from app.core.utils.models import get_document_model, get_sentiment_model
 
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
 
 # Get module level variables
-vader_analyzer = get_sentiment()
-spacy_nlp = get_spacy()
+vader_analyzer = get_sentiment_model()
+doc_model = get_document_model()
 
 
 def content_sentiment(content: str) -> dict:
     """Compute bart and vader sentiment scores for the supplied string"""
-    doc = spacy_nlp(content)
+    doc = doc_model(content)
 
     # Get bart and vader scores in an equivalent format (including precision)
     bart_scores = classify_content(doc.text, SENTIMENT_CLASSES)
@@ -30,7 +30,7 @@ def content_sentiment(content: str) -> dict:
 
 def sentence_sentiment(content: str) -> tuple[list]:
     """Compute bart and vader sentiment scores for each sentence in the supplied string"""
-    doc = spacy_nlp(content)
+    doc = doc_model(content)
 
     sentence_list, bart_list, vader_list = [], [], []
     for sentence in doc.sents:

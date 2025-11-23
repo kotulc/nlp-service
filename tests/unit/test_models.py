@@ -39,16 +39,15 @@ class Yake(BaseModel):
 
 
 @pytest.mark.parametrize("getter", [
-    models.get_acceptability,
-    models.get_embedding, 
-    models.get_generator, 
+    models.get_acceptability_model,
+    models.get_embedding_model, 
+    models.get_generative_model, 
     models.get_keybert, 
-    models.get_polarity, 
-    models.get_sentiment,
-    models.get_spacy,
-    models.get_spam,
-    models.get_tokenizer,
-    models.get_toxicity,
+    models.get_polarity_model, 
+    models.get_sentiment_model,
+    models.get_document_model,
+    models.get_spam_model,
+    models.get_toxicity_model,
     models.get_yake,
 ])
 def test_models(monkeypatch, getter):
@@ -58,7 +57,7 @@ def test_models(monkeypatch, getter):
     real_func = getter()
     assert callable(real_func)
 
-    real_result = real_func(["test"])
+    real_result = real_func("test")
 
     # Test with debug True (use mock models)
     monkeypatch.setattr(models.settings, "debug", True)
@@ -73,14 +72,14 @@ def test_models(monkeypatch, getter):
 
 
 # @pytest.mark.parametrize("getter, data_model", [
-#     (models.get_acceptability, Acceptability),
-#     (models.get_embedding, Embedding),
-#     (models.get_generator, Generator),
+#     (models.get_acceptability_model, Acceptability),
+#     (models.get_embedding_model, Embedding),
+#     (models.get_generative_model, Generator),
 #     (models.get_keybert, Keybert),
-#     (models.get_polarity, Polarity),
-#     (models.get_sentiment, Sentiment),
-#     (models.get_spam, Spam),
-#     (models.get_toxicity, Toxicity),
+#     (models.get_polarity_model, Polarity),
+#     (models.get_sentiment_model, Sentiment),
+#     (models.get_spam_model, Spam),
+#     (models.get_toxicity_model, Toxicity),
 #     (models.get_yake, Yake),
 # ])
 # def test_model_results(monkeypatch, getter, data_model):
@@ -104,13 +103,13 @@ def test_models(monkeypatch, getter):
 
 #     # Test with debug True (mock)
 #     monkeypatch.setattr(models.settings, "debug", True)
-#     mock_func = models.get_classifier()
+#     mock_func = models.get_classifier_model()
 #     mock_result = mock_func("test", candidate_labels=["A", "B"])
 
 #     # Test with debug False (real)
 #     monkeypatch.setattr(models.settings, "debug", False)
-#     models.get_classifier.cache_clear()
-#     real_func = models.get_spacy()
+#     models.get_classifier_model.cache_clear()
+#     real_func = models.get_document_model()
 #     real_result = real_func("test", candidate_labels=["A", "B"])
 #     assert type(mock_result) == type(real_result)
 
@@ -126,13 +125,13 @@ def test_models(monkeypatch, getter):
 
 #     # Test with debug True (mock)
 #     monkeypatch.setattr(models.settings, "debug", True)
-#     mock_func = models.get_classifier()
+#     mock_func = models.get_classifier_model()
 #     mock_result = mock_func("test", candidate_labels=["A", "B"])
 
 #     # Test with debug False (real)
 #     monkeypatch.setattr(models.settings, "debug", False)
-#     models.get_classifier.cache_clear()
-#     real_func = models.get_spacy()
+#     models.get_classifier_model.cache_clear()
+#     real_func = models.get_document_model()
 #     real_result = real_func("test", candidate_labels=["A", "B"])
 #     assert type(mock_result) == type(real_result)
 
@@ -148,13 +147,13 @@ def test_models(monkeypatch, getter):
 
 #     # Test with debug True (mock)
 #     monkeypatch.setattr(models.settings, "debug", True)
-#     mock_func = models.get_spacy()
+#     mock_func = models.get_document_model()
 #     mock_result = mock_func("test")
 
 #     # Test with debug False (real)
 #     monkeypatch.setattr(models.settings, "debug", False)
-#     models.get_spacy.cache_clear()
-#     real_func = models.get_spacy()
+#     models.get_document_model.cache_clear()
+#     real_func = models.get_document_model()
 #     real_result = real_func("test")
 #     assert type(mock_result) == type(real_result)
 

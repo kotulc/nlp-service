@@ -51,8 +51,70 @@ class ModelLoader:
         return response.json()
 
 
+#==================================================================================================
+# Generative language models
+#==================================================================================================
+
 @lru_cache(maxsize=1)
-def get_acceptability():
+def get_generative_model():
+    """Return the text generation pipeline or a mock function in debug mode"""
+    # Initialize the content generation model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
+    model = AutoModelForCausalLM.from_pretrained(DEFAULT_MODEL, torch_dtype=torch.bfloat16, device_map="auto")
+    
+    return ModelLoader(
+        model_key="generator",
+        default_callable=transformers.pipeline("text-generation", model=model, tokenizer=tokenizer),
+        debug_callable=lambda *args, **kwargs: ["Mock generated content"]
+    )
+
+
+#==================================================================================================
+# Keyword extraction models
+#==================================================================================================
+
+@lru_cache(maxsize=1)
+def get_keyword_model():
+    """Return the keyword extraction model or a mock function in debug mode"""
+    keybert = KeyBERT('all-MiniLM-L6-v2')
+    yake_extractor = yake.KeywordExtractor(
+            lan="en", 
+            n=1, 
+            dedupLim=0.9, 
+            dedupFunc="seqm", 
+            top=20, 
+            features=None
+        )
+    
+    def extract_keywords(content: str) -> list:
+        """Extract bert and yake keywords"""
+        bert_keywords = key_bert(
+            content, 
+            keyphrase_ngram_range=(1, 1), 
+            stop_words='english', 
+            top_n=top_n, 
+            use_mmr=False
+        )
+        bert_keywords = [phrase for phrase, score in bert_keywords]
+
+        yake_keywords = yake_extractor(content)
+        yake_keywords = [phrase for phrase, score in yake_keywords]
+
+        return list(set(bert_keywords + yake_keywords))
+    
+    return ModelLoader(
+        model_key="keybert",
+        default_callable=extract_keywords,
+        debug_callable=lambda *args, **kwargs: [("mock keyword", 1.0)]
+    )
+
+
+#==================================================================================================
+# Sentiment analysis models
+#==================================================================================================
+
+@lru_cache(maxsize=1)
+def get_acceptability_model():
     """Return the acceptability classifier pipeline or a mock function in debug mode"""
     return ModelLoader(
         model_key="acceptability",
@@ -62,7 +124,67 @@ def get_acceptability():
 
 
 @lru_cache(maxsize=1)
-def get_classifier():
+def get_polarity_model():
+    """Return the TextBlob polarity model or a mock function in debug mode"""
+    return ModelLoader(
+        model_key="polarity",
+        default_callable=TextBlob
+    )
+
+
+@lru_cache(maxsize=1)
+def get_sentiment_model():
+    """Return the vader sentiment model or a mock function in debug mode"""
+    return ModelLoader(
+        model_key="sentiment",
+        default_callable=SentimentIntensityAnalyzer,
+        debug_callable=lambda *args, **kwargs: {'neg': 0.5, 'neu': 0.5, 'pos': 0.5, 'compound': -0.5}
+    )
+
+
+@lru_cache(maxsize=1)
+def get_spam_model():
+    """Return the spam classifier tokenizer and model or a mock function in debug mode"""
+    spam_tokenizer = AutoTokenizer.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
+    spam_classifier = AutoModelForSequenceClassification.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2")
+    
+    def score_spam(content: str) -> float:
+        """Compute spam scores for the supplied text content"""
+        # Tokenize the input
+        inputs = spam_tokenizer(content, return_tensors="pt")
+
+        # Get model predictions
+        with torch.no_grad():
+            outputs = spam_classifier(**inputs)
+            logits = outputs.logits
+
+        # Apply softmax to get probabilities
+        probabilities = torch.softmax(logits, dim=1)
+        return round(float(probabilities.flatten()[1]), 4)
+
+    return ModelLoader(
+        model_key="spam",
+        default_callable=score_spam,
+        debug_callable=lambda *args, **kwargs: [{'label': 'Spam', 'score': 0.9}]
+    )
+
+
+@lru_cache(maxsize=1)
+def get_toxicity_model():
+    """Return the toxicity classifier pipeline or a mock function in debug mode"""
+    return ModelLoader(
+        model_key="tokenizer",
+        default_callable=pipeline("text-classification", model="unitary/toxic-bert"),
+        debug_callable=lambda *args, **kwargs: [{'label': 'Toxic', 'score': 0.9}]
+    )
+
+
+#==================================================================================================
+# Utility models
+#==================================================================================================
+
+@lru_cache(maxsize=1)
+def get_classifier_model():
     """Return the zero-shot classification pipeline or a mock function in debug mode"""
     return ModelLoader(
         model_key="classifier",
@@ -72,7 +194,7 @@ def get_classifier():
 
 
 @lru_cache(maxsize=1)
-def get_embedding():
+def get_embedding_model():
     """Return the language embedding model or a mock function in debug mode"""
     return ModelLoader(
         model_key="embedding",
@@ -82,100 +204,9 @@ def get_embedding():
 
 
 @lru_cache(maxsize=1)
-def get_generator():
-    """Return the text generation pipeline or a mock function in debug mode"""
-    # Initialize the content generation model and tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
-    model = AutoModelForCausalLM.from_pretrained(DEFAULT_MODEL, torch_dtype=torch.bfloat16, device_map="auto")
-    return ModelLoader(
-        model_key="generator",
-        default_callable=transformers.pipeline("text-generation", model=model, tokenizer=tokenizer),
-        debug_callable=lambda *args, **kwargs: "Mock generated content"
-    )
-
-
-@lru_cache(maxsize=1)
-def get_keybert():
-    """Return the KeyBERT model or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="keybert",
-        default_callable=KeyBERT('all-MiniLM-L6-v2').extract_keywords,
-        debug_callable=lambda *args, **kwargs: [("mock keyword", 1.0)]
-    )
-
-
-@lru_cache(maxsize=1)
-def get_polarity():
-    """Return the TextBlob polarity model or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="polarity",
-        default_callable=TextBlob,
-        debug_callable=lambda *args, **kwargs: {'polarity': 0.0, 'subjectivity': 0.0}
-    )
-
-
-@lru_cache(maxsize=1)
-def get_sentiment():
-    """Return the vader sentiment model or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="sentiment",
-        default_callable=SentimentIntensityAnalyzer(),
-        debug_callable=lambda *args, **kwargs: {'neg': 0.5, 'neu': 0.5, 'pos': 0.5, 'compound': -0.5}
-    )
-
-
-@lru_cache(maxsize=1)
-def get_spacy():
+def get_document_model():
     """Return the spacy NLP model or a blank model in debug mode"""
     return ModelLoader(
         model_key="spacy",
         default_callable=spacy.load("en_core_web_lg"),
-        debug_callable=lambda *args, **kwargs: spacy.blank("en")
-    )
-
-
-@lru_cache(maxsize=1)
-def get_spam():
-    """Return the spam classifier tokenizer and model or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="spam",
-        default_callable=AutoModelForSequenceClassification.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2"),
-        debug_callable=lambda *args, **kwargs: [{'label': 'Spam', 'score': 0.9}]
-    )
-
-
-@lru_cache(maxsize=1)
-def get_tokenizer():
-    """Return the spam classifier tokenizer and model or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="tokenizer",
-        default_callable=AutoTokenizer.from_pretrained("AntiSpamInstitute/spam-detector-bert-MoE-v2.2"),
-        debug_callable=lambda *args, **kwargs: [{'label': 'Spam', 'score': 0.9}]
-    )
-
-
-@lru_cache(maxsize=1)
-def get_toxicity():
-    """Return the toxicity classifier pipeline or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="tokenizer",
-        default_callable=pipeline("text-classification", model="unitary/toxic-bert"),
-        debug_callable=lambda *args, **kwargs: [{'label': 'Toxic', 'score': 0.9}]
-    )
-
-
-@lru_cache(maxsize=1)
-def get_yake():
-    """Return the YAKE keyword extractor or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="yake",
-        default_callable=yake.KeywordExtractor(
-            lan="en", 
-            n=1, 
-            dedupLim=0.9, 
-            dedupFunc="seqm", 
-            top=20, 
-            features=None
-        ).extract_keywords,
-        debug_callable=lambda *args, **kwargs: [("mock keyword", 1.0)]
     )
