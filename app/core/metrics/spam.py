@@ -1,8 +1,8 @@
 import numpy
 import torch
 
-from app.core.utils.samples import SPAM_TEXT, HAM_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_spam_model, get_toxicity_model
+from app.core.models.samples import SPAM_TEXT, HAM_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
+from app.core.models.loader import get_spam_model, get_toxicity_model
 
 
 # Get pre-trained toxicity and spam detection models

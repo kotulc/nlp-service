@@ -1,8 +1,8 @@
 import re
 
 from app.config import get_settings
-from app.core.utils.samples import SAMPLE_TEXT
-from app.core.utils.models import get_generative_model
+from app.core.models.samples import SAMPLE_TEXT
+from app.core.models.generative import get_generative_model
 
 
 # Extract constants from settings
@@ -15,15 +15,11 @@ DEFAULT_KWARGS = settings.models.transformers.model_dump()
 generator = get_generative_model()
 
 
-def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:
+def generate_response(content: str, prompt: str, delimiter: str="Output:") -> list[str]:
     """Generate a content summary string using a specified model and prompt"""
-    # Overload default arguments with user supplied arguments
-    transformers_kwargs = DEFAULT_KWARGS.copy()
-    transformers_kwargs.update(**kwargs)
-
     # Apply the prompt template and generate the summary
     text_prompt = DEFAULT_TEMPLATE.format(prompt=prompt, content=content, delimiter=delimiter)
-    sequences = generator(text_prompt, do_sample=True, return_full_text=False, **transformers_kwargs)
+    sequences = generator(text_prompt)
 
     # For each returned text sequence extract the generated content
     text_sequences = [sequence["generated_text"] for sequence in sequences]
@@ -32,7 +28,7 @@ def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwa
     return text_sequences
 
 
-def generate_summary(content: str, prompt: str, format: str=None, tone: str=None, **kwargs) -> list[str]:
+def generate_summary(content: str, prompt: str, format: str=None, tone: str=None) -> list[str]:
     """Generate a summary with the provided prompt and parse the model output accordingly"""
     # Add a conversational tone to the supplied prompt if requested
     if tone: prompt += f" in a {tone} tone"
@@ -40,10 +36,10 @@ def generate_summary(content: str, prompt: str, format: str=None, tone: str=None
     # Apply the prompt template and generate the summary text
     if format:
         # Use the supplied summary type as the generated text output delimeter
-        response = generate_response(content, prompt, delimiter=f"<|{format}|>:", **kwargs)
+        response = generate_response(content, prompt, delimiter=f"<|{format}|>:")
     else:
         # Use the default delimiter
-        response = generate_response(content, prompt, **kwargs)
+        response = generate_response(content, prompt)
     
     # Parse and format the generated text based on known special characters:
     if format and format.lower() in ("outline", "list", "points"):
@@ -68,7 +64,6 @@ def generate_summary(content: str, prompt: str, format: str=None, tone: str=None
 def demo_generator():
     """Test the summarization function with different parameters"""
     # Define generation parameters, prompt, and related arguments
-    generate_kwargs = dict(max_new_tokens=32, temperature=0.7)
     sample_kwargs = [
         dict(content=SAMPLE_TEXT, prompt="In 5 words or less, generate several concise and engaging titles", format="titles"),
         dict(content=SAMPLE_TEXT, prompt="In as few words as possible, list several tangentially related concepts", format="list"),
@@ -79,12 +74,12 @@ def demo_generator():
 
     print("\n== Basic Summary ===")
     print(f"Model: {DEFAULT_MODEL}")
-    result = generate_summary(SAMPLE_TEXT, "Provide a short summary of the following text", **generate_kwargs)
+    result = generate_summary(SAMPLE_TEXT, "Provide a short summary of the following text")
     print(result)
 
     print("\n=== With Custom Prompt ===")
     for kwargs in sample_kwargs:
-        result = generate_summary(**kwargs, **generate_kwargs)
+        result = generate_summary(**kwargs)
         print(kwargs.get("prompt"), result)
 
 

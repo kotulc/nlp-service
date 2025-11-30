@@ -2,9 +2,9 @@ import spacy
 import numpy
 
 from app.core.summary.generate import generate_summary
-from app.core.utils.models import get_document_model
-from app.core.utils.relevance import composite_scores
-from app.core.utils.samples import SAMPLE_TEXT
+from app.core.models.loader import get_document_model
+from app.core.models.relevance import composite_scores
+from app.core.models.samples import SAMPLE_TEXT
 from app.config import get_settings
 
 

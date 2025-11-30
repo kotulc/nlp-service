@@ -52,24 +52,6 @@ class ModelLoader:
 
 
 #==================================================================================================
-# Generative language models
-#==================================================================================================
-
-@lru_cache(maxsize=1)
-def get_generative_model():
-    """Return the text generation pipeline or a mock function in debug mode"""
-    # Initialize the content generation model and tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
-    model = AutoModelForCausalLM.from_pretrained(DEFAULT_MODEL, torch_dtype=torch.bfloat16, device_map="auto")
-    
-    return ModelLoader(
-        model_key="generator",
-        default_callable=transformers.pipeline("text-generation", model=model, tokenizer=tokenizer),
-        debug_callable=lambda *args, **kwargs: ["Mock generated content"]
-    )
-
-
-#==================================================================================================
 # Keyword extraction models
 #==================================================================================================
 
@@ -182,7 +164,7 @@ def get_toxicity_model():
 
 
 #==================================================================================================
-# Utility models
+# Document and utility models
 #==================================================================================================
 
 @lru_cache(maxsize=1)
