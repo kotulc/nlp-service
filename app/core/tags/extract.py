@@ -1,6 +1,6 @@
 from app.core.summary.generate import generate_summary
 from app.core.utils.relevance import maximal_marginal_relevance, semantic_similarity
-from app.core.utils.models import get_document_model, get_keybert, get_yake
+from app.core.utils.models import get_document_model, get_keyword_model
 from app.core.utils.samples import SAMPLE_TEXT
 
 from app.config import get_settings
@@ -8,12 +8,11 @@ from app.config import get_settings
 
 # Define module level constants
 settings = get_settings()
-TAG_PROMPTS = settings.defaults.tags
+TAG_PROMPTS = settings.models.tags
 
 # Get module level variables
-key_bert = get_keybert()
 doc_model = get_document_model()
-yake_extractor = get_yake()
+keyword_model = get_keyword_model(top_n=10)
 
 
 def extract_entities(content: str, top_n: int=5) -> list:
@@ -30,26 +29,8 @@ def extract_entities(content: str, top_n: int=5) -> list:
 
 def extract_keywords(content: str, top_n: int=10) -> list:
     """Extract entities and return the top_n most relevant results"""
-    # Bert keywords
-    bert_keywords = key_bert(
-        content, 
-        keyphrase_ngram_range=(1, 1), 
-        stop_words='english', 
-        top_n=top_n, 
-        use_mmr=False
-    )
-    bert_keywords = [phrase for phrase, score in bert_keywords]
-   
-    # Yake keywords (adds recall)
-    yake_keywords = yake_extractor(content)
-    yake_keywords = [phrase for phrase, score in yake_keywords]
-
-    # Combine all keywords and compare source relevance with cosine similiarty
-    candidates = []
-    for keys in (bert_keywords, yake_keywords):
-        candidates.extend([k.lower() for k in keys])
-
-    candidates = list(set(candidates))
+    # Extract keywords and compare source relevance with cosine similiarty
+    candidates = keyword_model(content)
     keywords, scores = semantic_similarity(content, candidates)
 
     return keywords[:top_n], scores[:top_n]

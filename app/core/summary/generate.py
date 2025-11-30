@@ -7,9 +7,9 @@ from app.core.utils.models import get_generative_model
 
 # Extract constants from settings
 settings = get_settings()
-DEFAULT_MODEL = settings.defaults.models.default
-DEFAULT_TEMPLATE = settings.defaults.template
-DEFAULT_KWARGS = settings.defaults.transformers.model_dump()
+DEFAULT_MODEL = settings.models.generative
+DEFAULT_TEMPLATE = settings.models.template
+DEFAULT_KWARGS = settings.models.transformers.model_dump()
 
 # Load the tokenizer and model
 generator = get_generative_model()
