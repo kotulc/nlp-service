@@ -2,10 +2,9 @@ import torch
 import transformers
 
 from pydantic import BaseModel, Field
-from typing import Any, List
+from typing import List
 
 from functools import lru_cache
-from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from app.core.models.loader import ModelLoader
@@ -39,7 +38,13 @@ def get_generative_model():
 
     def get_model_inference(content: str, **kwargs) -> List[str]:
         """Return generated text from the model"""
-        return generator(content, do_sample=True, return_full_text=False, **default_kwargs, **kwargs)
+        if len(kwargs):
+            model_kwargs = default_kwargs.copy()
+            model_kwargs.update(kwargs)
+        else:
+            model_kwargs = default_kwargs
+
+        return generator(content, do_sample=True, return_full_text=False, **model_kwargs)
 
     return ModelLoader(
         model_key="generator",

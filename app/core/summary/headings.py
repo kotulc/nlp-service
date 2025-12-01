@@ -1,16 +1,15 @@
-import spacy
 import numpy
 
 from app.core.summary.generate import generate_summary
 from app.core.models.loader import get_document_model
-from app.core.models.relevance import composite_scores
-from app.core.models.samples import SAMPLE_TEXT
+from app.core.utils.relevance import composite_scores
+from app.core.utils.samples import SAMPLE_TEXT
 from app.config import get_settings
 
 
 # Extract module-level constants from settings
 settings = get_settings()
-HEADING_PROMPTS = settings.defaults.headings.model_dump()
+HEADING_PROMPTS = settings.models.headings.model_dump()
 
 # Define module-level variables
 doc_model = get_document_model()

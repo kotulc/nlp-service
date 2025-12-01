@@ -1,10 +1,10 @@
 import numpy
 
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from app.core.utils.models import get_acceptability_model, get_embedding_model
+from app.core.models.sentiment import get_acceptability_model
+from app.core.models.loader import get_embedding_model
+
 
 # Load a model fine-tuned on the CoLA dataset for linguistic acceptability scoring
 classifier = get_acceptability_model()

@@ -6,7 +6,7 @@ import spacy
 from pydantic import BaseModel, Field
 from typing import Dict, List
 
-from app.core.utils import models
+from app.core.models import loader
 
 
 # Define expected return data types for each model
@@ -39,20 +39,20 @@ class Yake(BaseModel):
 
 
 @pytest.mark.parametrize("getter", [
-    models.get_acceptability_model,
-    models.get_embedding_model, 
-    models.get_generative_model, 
-    models.get_keybert, 
-    models.get_polarity_model, 
-    models.get_sentiment_model,
-    models.get_document_model,
-    models.get_spam_model,
-    models.get_toxicity_model,
-    models.get_yake,
+    loader.get_acceptability_model,
+    loader.get_embedding_model, 
+    loader.get_generative_model, 
+    loader.get_keybert, 
+    loader.get_polarity_model, 
+    loader.get_sentiment_model,
+    loader.get_document_model,
+    loader.get_spam_model,
+    loader.get_toxicity_model,
+    loader.get_yake,
 ])
 def test_models(monkeypatch, getter):
     # Test with debug False (use real models)
-    monkeypatch.setattr(models.settings, "debug", False)
+    monkeypatch.setattr(loader.settings, "debug", False)
     getter.cache_clear()
     real_func = getter()
     assert callable(real_func)
@@ -60,7 +60,7 @@ def test_models(monkeypatch, getter):
     real_result = real_func("test")
 
     # Test with debug True (use mock models)
-    monkeypatch.setattr(models.settings, "debug", True)
+    monkeypatch.setattr(loader.settings, "debug", True)
     getter.cache_clear()
     mock_func = getter()
     assert callable(mock_func)

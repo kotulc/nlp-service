@@ -1,8 +1,8 @@
 import re
 
 from app.config import get_settings
-from app.core.models.samples import SAMPLE_TEXT
 from app.core.models.generative import get_generative_model
+from app.core.utils.samples import SAMPLE_TEXT
 
 
 # Extract constants from settings
@@ -15,11 +15,11 @@ DEFAULT_KWARGS = settings.models.transformers.model_dump()
 generator = get_generative_model()
 
 
-def generate_response(content: str, prompt: str, delimiter: str="Output:") -> list[str]:
+def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwargs) -> list[str]:
     """Generate a content summary string using a specified model and prompt"""
     # Apply the prompt template and generate the summary
     text_prompt = DEFAULT_TEMPLATE.format(prompt=prompt, content=content, delimiter=delimiter)
-    sequences = generator(text_prompt)
+    sequences = generator(text_prompt, **kwargs)
 
     # For each returned text sequence extract the generated content
     text_sequences = [sequence["generated_text"] for sequence in sequences]
@@ -28,7 +28,7 @@ def generate_response(content: str, prompt: str, delimiter: str="Output:") -> li
     return text_sequences
 
 
-def generate_summary(content: str, prompt: str, format: str=None, tone: str=None) -> list[str]:
+def generate_summary(content: str, prompt: str, format: str=None, tone: str=None, **kwargs) -> list[str]:
     """Generate a summary with the provided prompt and parse the model output accordingly"""
     # Add a conversational tone to the supplied prompt if requested
     if tone: prompt += f" in a {tone} tone"
@@ -36,10 +36,10 @@ def generate_summary(content: str, prompt: str, format: str=None, tone: str=None
     # Apply the prompt template and generate the summary text
     if format:
         # Use the supplied summary type as the generated text output delimeter
-        response = generate_response(content, prompt, delimiter=f"<|{format}|>:")
+        response = generate_response(content, prompt, delimiter=f"<|{format}|>:", **kwargs)
     else:
         # Use the default delimiter
-        response = generate_response(content, prompt)
+        response = generate_response(content, prompt, **kwargs)
     
     # Parse and format the generated text based on known special characters:
     if format and format.lower() in ("outline", "list", "points"):

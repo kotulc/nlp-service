@@ -3,15 +3,16 @@ import numpy
 from typing import Dict
 
 from app.core.metrics.style import classify_content
+from app.core.models.sentiment import get_sentiment_model
+from app.core.models.loader import get_document_model
 from app.core.utils.samples import SAMPLE_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT
-from app.core.utils.models import get_document_model, get_sentiment_model
 
 
 # Define sentiment class constant
 SENTIMENT_CLASSES = ["negative", "neutral", "positive"]
 
 # Get module level variables
-vader_analyzer = get_sentiment_model()
+sentiment_model = get_sentiment_model()
 doc_model = get_document_model()
 
 
@@ -22,7 +23,7 @@ def content_sentiment(content: str) -> dict:
     # Get bart and vader scores in an equivalent format (including precision)
     bart_scores = classify_content(doc.text, SENTIMENT_CLASSES)
     bart_scores = [round(score, 3) for score in bart_scores]
-    vader_scores = vader_analyzer.polarity_scores(doc.text)
+    vader_scores = sentiment_model(doc.text)
     vader_scores = [vader_scores[k] for k in ('neg', 'neu', 'pos')]
 
     return bart_scores, vader_scores
@@ -41,7 +42,7 @@ def sentence_sentiment(content: str) -> tuple[list]:
         bart_scores = [round(score, 3) for score in bart_scores]
         bart_list.append(bart_scores)
 
-        vader_scores = vader_analyzer.polarity_scores(sentence.text)
+        vader_scores = sentiment_model(sentence.text)
         vader_scores = [vader_scores[k] for k in ('neg', 'neu', 'pos')]
         vader_list.append(vader_scores)
 

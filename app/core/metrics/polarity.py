@@ -1,5 +1,6 @@
+from app.core.models.sentiment import get_polarity_model, get_sentiment_model
+from app.core.models.loader import get_document_model
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
-from app.core.utils.models import get_document_model, get_sentiment_model, get_polarity_model
 
 
 # Get module level variables

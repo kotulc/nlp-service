@@ -1,12 +1,16 @@
 # Core Service Modules
 The core natural language service components include text sentiment and related *metrics*, Content *summarization* and heading generation, and *tagging* and keyword extraction utilities. Each package in this directory contains a module with the name of the package (e.g. `appp.core.summary.summary.py`) that contains the primary get_* functions for that subpackage. These primary functions are leveraged by the related API endpoints found in `
 
-These core components make up the core language modeling (AI) functionality of the service.  
-
 
 ## Structure
+The following components make up the core language modeling (AI) functionality of the service.  
+- models: language models and utilities
+- metrics: text style and scoring functions
+- summary: content summarization
+- tags: content keyword extraction
 
-### Models
+
+### models
 Low-level language helpers and model utilities: embedding and keyword models, semantic-similarity/MMR routines, and small sample helpers. Provides the algorithms and model calls that power tagging and summarization.
 
 This package includes shared utilities and model loader wrappers: centralized model initialization, caching, debug/remote routing, and lightweight fallbacks for heavy dependencies. Keeps resource management and common helpers consistent across subpackages.
