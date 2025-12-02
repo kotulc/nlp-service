@@ -38,12 +38,12 @@ def get_polarity_model():
     """Return the TextBlob polarity model or a mock function in debug mode"""
     # For both sets of scores: -1 most extreme negative, +1 most extreme positive
     analyzer = SentimentIntensityAnalyzer()
-    text_blob = TextBlob()
     
     def polarity_scores(content: str) -> Dict[str, float]:
         """Compute blob and vader polarity for the supplied string"""
-        # blob_score = text_blob(doc.text).sentiment.polarity
-        return analyzer.polarity_scores(content)['compound']
+        blob_score = TextBlob(content).sentiment.polarity
+        vader_score = analyzer.polarity_scores(content)['compound']
+        return (blob_score + vader_score) / 2
 
     return ModelLoader(
         model_key="polarity",
@@ -56,9 +56,16 @@ def get_sentiment_model():
     """Return the vader sentiment model or a mock function in debug mode"""
     analyzer = SentimentIntensityAnalyzer()
 
+    def sentiment_scores(content: str) -> Dict[str, float]:
+        """Compute bart and vader sentiment scores for the supplied string"""
+        # TODO: Add BART sentiment model and combine here
+        sentiment_scores = analyzer.polarity_scores(content)
+        sentiment_scores = [sentiment_scores[k] for k in ('neg', 'neu', 'pos')]
+        return sentiment_scores
+    
     return ModelLoader(
         model_key="sentiment",
-        default_callable=analyzer.polarity_scores,
+        default_callable=sentiment_scores,
         debug_callable=lambda *args, **kwargs: {'neg': 0.5, 'neu': 0.5, 'pos': 0.5, 'compound': -0.5}
     )
 

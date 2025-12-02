@@ -4,38 +4,29 @@ from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, S
 
 
 # Get module level variables
-text_blob = get_polarity_model()
-vader_analyzer = get_sentiment_model()
+polarity_model = get_polarity_model()
 doc_model = get_document_model()
 
 
 def content_polarity(content: str) -> dict:
     """Compute blob and vader polarity for the supplied string"""
-    doc = doc_model(content)
-
     # For both sets of scores: -1 most extreme negative, +1 most extreme positive
-    blob_score = text_blob(doc.text).sentiment.polarity
-    vader_score = vader_analyzer.polarity_scores(doc.text)['compound']
-
-    return round(blob_score, 4), round(vader_score, 4)
+    doc = doc_model(content)
+    return round(polarity_model(doc.text), 4)
 
 
 def sentence_polarity(content: str) -> list:
     """Compute blob and vader polarity for each sentence in the supplied string"""
     doc = doc_model(content)
 
-    sentence_list, blob_list, vader_list = [], [], []
+    sentence_list, score_list = [], []
     for sentence in doc.sents:
         # For both sets of scores: -1 most extreme negative, +1 most extreme positive
-        sentence_list.append(sentence.text)
+        sentence_text = sentence.text
+        sentence_list.append(sentence_text)
+        score_list.append(round(polarity_model(sentence_text), 4))
 
-        blob_score = text_blob(sentence.text).sentiment.polarity
-        blob_list.append(round(blob_score, 4))
-
-        vader_score = vader_analyzer.polarity_scores(sentence.text)['compound']
-        vader_list.append(round(vader_score, 4))
-
-    return sentence_list, blob_list, vader_list
+    return sentence_list, score_list
 
 
 def score_polarity(content: str) -> float:
@@ -55,19 +46,19 @@ def demo_polarity():
     for label, content in zip(content_labels, content_text):
         print(f"\nText: {label}")
         
-        blob_score, vader_score = content_polarity(content)
-        print(f"Content Polarity:", blob_score, vader_score)
+        polarity_score = content_polarity(content)
+        print(f"Content Polarity:", polarity_score)
         
     print("\n== Sentence Polarity ===")
     print(f"\nText: sample_text")
     # Textblob and vader_score polarity scores range from [-1.0, 1.0] with 1 being the most positive
-    sentences, blob_score, vader_score = sentence_polarity(SAMPLE_TEXT)
+    sentences, scores = sentence_polarity(SAMPLE_TEXT)
     
     # Format document sentence in a more readable way
     print(f"Sentence Polarity:")
-    for s, b, v in zip(sentences, blob_score, vader_score):
+    for s, score in zip(sentences, scores):
         clean_text = "'" + " ".join(s.strip().split())[:60] + "...':"
-        print(f"{clean_text:<64}", b, v)
+        print(f"{clean_text:<64}", score)
 
 
 if __name__ == "__main__":
