@@ -1,41 +1,8 @@
-import types
-import numpy
 import pytest
-import spacy
 
-from pydantic import BaseModel, Field
-from typing import Dict, List
-
-from app.core.models import loader
-
-
-# Define expected return data types for each model
-class Acceptability(BaseModel):
-    results: List[dict]
-
-class Classifier(BaseModel):
-    results: Dict[str, list]
-
-class Generator(BaseModel):
-    results: str
-
-class Keybert(BaseModel):
-    results: List[tuple]
-
-class Polarity(BaseModel):
-    results: Dict[str, float]
-
-class Sentiment(BaseModel):
-    results: Dict[str, float]
-
-class Spam(BaseModel):
-    results: List[dict]
-
-class Toxicity(BaseModel):
-    results: List[dict]
-
-class Yake(BaseModel):
-    results: List[tuple]
+from app.config import get_settings
+from app.core.models.loader import loader
+from app.core.models.generative import generativeRequest, generativeResponse, get_generative_model
 
 
 @pytest.mark.parametrize("getter", [
@@ -71,91 +38,21 @@ def test_models(monkeypatch, getter):
     assert type(real_result) == type(mock_result)
 
 
-# @pytest.mark.parametrize("getter, data_model", [
-#     (models.get_acceptability_model, Acceptability),
-#     (models.get_embedding_model, Embedding),
-#     (models.get_generative_model, Generator),
-#     (models.get_keybert, Keybert),
-#     (models.get_polarity_model, Polarity),
-#     (models.get_sentiment_model, Sentiment),
-#     (models.get_spam_model, Spam),
-#     (models.get_toxicity_model, Toxicity),
-#     (models.get_yake, Yake),
-# ])
-# def test_model_results(monkeypatch, getter, data_model):
-#     # Save original debug setting
-#     original_debug = models.settings.debug
 
-#     # Test with debug True (mock)
-#     monkeypatch.setattr(models.settings, "debug", True)
-#     getter.cache_clear()
-#     mock_func = getter()
-#     mock_result = mock_func("test")
-#     data_model(results=mock_result)
+def test_generative_request_response_validation(monkeypatch):
+    # minimal valid request
+    req = generativeRequest(content="This is a short prompt for generation.")
 
-#     # Restore original debug setting
-#     monkeypatch.setattr(models.settings, "debug", original_debug)
+    # ensure debug path is used (lightweight, deterministic)
+    monkeypatch.setattr(settings, "debug", True)
 
+    # clear cached loader so setting takes effect
+    if hasattr(get_generative_model, "cache_clear"):
+        get_generative_model.cache_clear()
 
-# def test_classifier(monkeypatch):
-#     # Save original debug setting
-#     original_debug = models.settings.debug
+    model_callable = get_generative_model()
+    assert callable(model_callable)
 
-#     # Test with debug True (mock)
-#     monkeypatch.setattr(models.settings, "debug", True)
-#     mock_func = models.get_classifier_model()
-#     mock_result = mock_func("test", candidate_labels=["A", "B"])
-
-#     # Test with debug False (real)
-#     monkeypatch.setattr(models.settings, "debug", False)
-#     models.get_classifier_model.cache_clear()
-#     real_func = models.get_document_model()
-#     real_result = real_func("test", candidate_labels=["A", "B"])
-#     assert type(mock_result) == type(real_result)
-
-#     Classifier(results=real_result)
-
-#     # Restore original debug setting
-#     monkeypatch.setattr(models.settings, "debug", original_debug)
-
-
-# def test_embedding(monkeypatch):
-#     # Save original debug setting
-#     original_debug = models.settings.debug
-
-#     # Test with debug True (mock)
-#     monkeypatch.setattr(models.settings, "debug", True)
-#     mock_func = models.get_classifier_model()
-#     mock_result = mock_func("test", candidate_labels=["A", "B"])
-
-#     # Test with debug False (real)
-#     monkeypatch.setattr(models.settings, "debug", False)
-#     models.get_classifier_model.cache_clear()
-#     real_func = models.get_document_model()
-#     real_result = real_func("test", candidate_labels=["A", "B"])
-#     assert type(mock_result) == type(real_result)
-
-#     Classifier(results=real_result)
-
-#     # Restore original debug setting
-#     monkeypatch.setattr(models.settings, "debug", original_debug)
-
-
-# def test_spacy(monkeypatch):
-#     # Save original debug setting
-#     original_debug = models.settings.debug
-
-#     # Test with debug True (mock)
-#     monkeypatch.setattr(models.settings, "debug", True)
-#     mock_func = models.get_document_model()
-#     mock_result = mock_func("test")
-
-#     # Test with debug False (real)
-#     monkeypatch.setattr(models.settings, "debug", False)
-#     models.get_document_model.cache_clear()
-#     real_func = models.get_document_model()
-#     real_result = real_func("test")
-#     assert type(mock_result) == type(real_result)
-
-#     # Restore original debug setting
-#     monkeypatch.setattr(models.settings, "debug", original_debug)
+    # invoke model with the request content and validate response model accepts the output
+    result = model_callable(req.content)
+    generativeResponse(results=result)

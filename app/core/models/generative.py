@@ -18,7 +18,7 @@ DEFAULT_MODEL = settings.models.generative
 DEFAULT_KWARGS = settings.models.transformers.model_dump()
 
 
-# Define the generative input and output pydantic data models (for testing and validation)
+# Define the generative input and output pydantic data models (for testing and validation only)
 class generativeRequest(BaseModel):
     content: str = Field(..., description="The text context used for generation")
 

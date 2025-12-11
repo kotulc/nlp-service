@@ -9,7 +9,7 @@ from functools import lru_cache
 from app.core.models.loader import ModelLoader
 
 
-# Define the generative input and output pydantic data models (for testing and validation)
+# Define the generative input and output pydantic data models (for testing and validation only)
 class keywordRequest(BaseModel):
     content: str = Field(..., description="The text to extract keywords from")
 

@@ -1,11 +1,3 @@
-import numpy
-import spacy
-
-from functools import lru_cache
-
-from sentence_transformers import SentenceTransformer
-from transformers import pipeline
-
 from app.config import get_settings
 
 
@@ -38,36 +30,3 @@ class ModelLoader:
         response = requests.post(self.remote_endpoint, json=payload)
         response.raise_for_status()
         return response.json()
-
-
-#==================================================================================================
-# Document and utility models
-#==================================================================================================
-
-@lru_cache(maxsize=1)
-def get_classifier_model():
-    """Return the zero-shot classification pipeline or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="classifier",
-        default_callable=pipeline(model='facebook/bart-large-mnli'),
-        debug_callable=lambda *args, **kwargs: {"labels": ["mock"], "scores": [1.0]}
-    )
-
-
-@lru_cache(maxsize=1)
-def get_embedding_model():
-    """Return the language embedding model or a mock function in debug mode"""
-    return ModelLoader(
-        model_key="embedding",
-        default_callable=SentenceTransformer('all-MiniLM-L6-v2').encode,
-        debug_callable=lambda *args, **kwargs: numpy.zeros((1, 384))
-    )
-
-
-@lru_cache(maxsize=1)
-def get_document_model():
-    """Return the spacy NLP model or a blank model in debug mode"""
-    return ModelLoader(
-        model_key="spacy",
-        default_callable=spacy.load("en_core_web_lg"),
-    )

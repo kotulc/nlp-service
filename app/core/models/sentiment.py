@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from app.core.models.loader import ModelLoader
 
 
-# Define the generative input and output pydantic data models (for testing and validation)
+# Define the generative input and output pydantic data models (for testing and validation only)
 class sentimentRequest(BaseModel):
     content: str = Field(..., description="The text context used for sentiment analysis")
 

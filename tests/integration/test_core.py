@@ -4,35 +4,35 @@ from app.core.tags import extract
 
 
 def test_polarity():
-    """Test the polarity metric functions"""
+    """Run the polarity metric function demo and ensure it runs without error"""
     polarity.demo_polarity()
 
 
 def test_sentiment():
-    """Test the sentiment metric functions"""
+    """Run the sentiment metric function demo and ensure it runs without error"""
     sentiment.demo_sentiment()
 
 
 def test_spam():
-    """Test the spam metric functions"""
+    """Run the spam metric function demo and ensure it runs without error"""
     spam.demo_spam()
 
 
 def test_style():
-    """Test the toxicity metric functions"""
+    """Run the toxicity metric function demo and ensure it runs without error"""
     style.demo_style()
 
 
 def test_generator():
-    """Test the summary generation functions"""
+    """Run the summary generation function demo and ensure it runs without error"""
     generate.demo_generator()
 
 
 def test_headings():
-    """Test the heading generation functions"""
+    """Run the heading generation function demo and ensure it runs without error"""
     headings.demo_headings()
 
 
 def test_extract():
-    """Test the tagging functions"""
+    """Run the tagging function demo and ensure it runs without error"""
     extract.demo_tagger()
