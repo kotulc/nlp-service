@@ -26,10 +26,20 @@ class classifierResponse(BaseModel):
 @lru_cache(maxsize=1)
 def get_classifier_model():
     """Return the zero-shot classification pipeline or a mock function in debug mode"""
+    pipe = pipeline(model='facebook/bart-large-mnli')
+
+    def score_labels(content: str, candidate_labels: List[str], **kwargs) -> list:
+        """Return the classification scores for the candidate labels"""
+        result = pipe(content, candidate_labels=candidate_labels, **kwargs)
+        scores = {label: score for label, score in zip(result['labels'], result['scores'])} 
+
+        # Return scores in the order the labels were provided
+        return [scores[k] for k in candidate_labels]
+    
     return ModelLoader(
         model_key="classifier",
-        default_callable=pipeline(model='facebook/bart-large-mnli'),
-        debug_callable=lambda *args, **kwargs: {"labels": ["mock"], "scores": [1.0]}
+        default_callable=score_labels,
+        debug_callable=lambda *args, **kwargs: [1.0, 0.0]
     )
 
 

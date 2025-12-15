@@ -26,10 +26,17 @@ class sentimentResponse(BaseModel):
 @lru_cache(maxsize=1)
 def get_acceptability_model():
     """Return the acceptability classifier pipeline or a mock function in debug mode"""
+    pipe = pipeline("text-classification", model="textattack/roberta-base-CoLA")
+
+    def score_acceptability(content: str) -> float:
+        """Compute acceptability score for the supplied string"""
+        result = pipe(content)
+        return {'score': result[0]['score']}
+    
     return ModelLoader(
         model_key="acceptability",
-        default_callable=pipeline("text-classification", model="textattack/roberta-base-CoLA"),
-        debug_callable=lambda *args, **kwargs: [{'label': 'ACCEPTABLE', 'score': 0.9}]
+        default_callable=score_acceptability,
+        debug_callable=lambda *args, **kwargs: {'score': 0.9}
     )
 
 
@@ -39,15 +46,16 @@ def get_polarity_model():
     # For both sets of scores: -1 most extreme negative, +1 most extreme positive
     analyzer = SentimentIntensityAnalyzer()
     
-    def polarity_scores(content: str) -> Dict[str, float]:
+    def score_polarity(content: str) -> Dict[str, float]:
         """Compute blob and vader polarity for the supplied string"""
         blob_score = TextBlob(content).sentiment.polarity
         vader_score = analyzer.polarity_scores(content)['compound']
-        return (blob_score + vader_score) / 2
+        return {'score': (blob_score + vader_score) / 2}
 
     return ModelLoader(
         model_key="polarity",
-        default_callable=polarity_scores
+        default_callable=score_polarity,
+        debug_callable=lambda *args, **kwargs: {'score': 0.9}
     )
 
 
@@ -56,16 +64,16 @@ def get_sentiment_model():
     """Return the vader sentiment model or a mock function in debug mode"""
     analyzer = SentimentIntensityAnalyzer()
 
-    def sentiment_scores(content: str) -> Dict[str, float]:
+    def score_sentiment(content: str) -> Dict[str, float]:
         """Compute bart and vader sentiment scores for the supplied string"""
         # TODO: Add BART sentiment model and combine here
         sentiment_scores = analyzer.polarity_scores(content)
-        sentiment_scores = [sentiment_scores[k] for k in ('neg', 'neu', 'pos')]
+        sentiment_scores = {k: sentiment_scores[k] for k in ('neg', 'neu', 'pos')}
         return sentiment_scores
     
     return ModelLoader(
         model_key="sentiment",
-        default_callable=sentiment_scores,
+        default_callable=score_sentiment,
         debug_callable=lambda *args, **kwargs: {'neg': 0.5, 'neu': 0.5, 'pos': 0.5, 'compound': -0.5}
     )
 
@@ -88,20 +96,27 @@ def get_spam_model():
 
         # Apply softmax to get probabilities
         probabilities = torch.softmax(logits, dim=1)
-        return probabilities.flatten()[1]
+        return {'score': probabilities.flatten()[1]}
 
     return ModelLoader(
         model_key="spam",
         default_callable=score_spam,
-        debug_callable=lambda *args, **kwargs: [{'label': 'Spam', 'score': 0.9}]
+        debug_callable=lambda *args, **kwargs: {'score': 0.9}
     )
 
 
 @lru_cache(maxsize=1)
 def get_toxicity_model():
     """Return the toxicity classifier pipeline or a mock function in debug mode"""
+    pipe = pipeline("text-classification", model="unitary/toxic-bert")
+
+    def score_toxicity(content: str) -> float:
+        """Compute toxicity score for the supplied string"""
+        result = pipe(content)
+        return {'score': result[0]['score']}
+
     return ModelLoader(
         model_key="tokenizer",
-        default_callable=pipeline("text-classification", model="unitary/toxic-bert"),
-        debug_callable=lambda *args, **kwargs: [{'label': 'Toxic', 'score': 0.9}]
+        default_callable=score_toxicity,
+        debug_callable=lambda *args, **kwargs: {'score': 0.9}
     )

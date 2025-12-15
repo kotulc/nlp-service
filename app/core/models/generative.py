@@ -44,7 +44,8 @@ def get_generative_model():
         else:
             model_kwargs = default_kwargs
 
-        return generator(content, do_sample=True, return_full_text=False, **model_kwargs)
+        sequences = generator(content, do_sample=True, return_full_text=False, **model_kwargs)
+        return [sequence["generated_text"] for sequence in sequences]
 
     return ModelLoader(
         model_key="generator",

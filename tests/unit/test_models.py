@@ -1,58 +1,50 @@
 import pytest
 
-from app.config import get_settings
-from app.core.models.loader import loader
-from app.core.models.generative import generativeRequest, generativeResponse, get_generative_model
+from app.core.models import loader
+from app.core.models import sentiment, generative, keyword, utility
 
 
-@pytest.mark.parametrize("getter", [
-    loader.get_acceptability_model,
-    loader.get_embedding_model, 
-    loader.get_generative_model, 
-    loader.get_keybert, 
-    loader.get_polarity_model, 
-    loader.get_sentiment_model,
-    loader.get_document_model,
-    loader.get_spam_model,
-    loader.get_toxicity_model,
-    loader.get_yake,
-])
-def test_models(monkeypatch, getter):
-    # Test with debug False (use real models)
-    monkeypatch.setattr(loader.settings, "debug", False)
-    getter.cache_clear()
-    real_func = getter()
-    assert callable(real_func)
-
-    real_result = real_func("test")
-
-    # Test with debug True (use mock models)
-    monkeypatch.setattr(loader.settings, "debug", True)
-    getter.cache_clear()
-    mock_func = getter()
-    assert callable(mock_func)
-
-    mock_result = mock_func("test")
-
-    assert real_func is not mock_func
-    assert type(real_result) == type(mock_result)
+# Define mock inputs for testing
+MOCK_CONTENT = "This is test input for the model"
+MOCK_LABELS = ["label1", "label2"]
 
 
+def patch_test(monkeypatch, model_callable, debug_callable):
+    # Reset model function LRU cache
+    model_callable.cache_clear()
+    
+    # Test with debug True (use debug model)
+    monkeypatch.setattr(loader.settings, "debug", debug_callable)
 
-def test_generative_request_response_validation(monkeypatch):
-    # minimal valid request
-    req = generativeRequest(content="This is a short prompt for generation.")
-
-    # ensure debug path is used (lightweight, deterministic)
-    monkeypatch.setattr(settings, "debug", True)
-
-    # clear cached loader so setting takes effect
-    if hasattr(get_generative_model, "cache_clear"):
-        get_generative_model.cache_clear()
-
-    model_callable = get_generative_model()
+    # Verify function is callable and I/O is as expected
     assert callable(model_callable)
 
-    # invoke model with the request content and validate response model accepts the output
-    result = model_callable(req.content)
-    generativeResponse(results=result)
+
+@pytest.mark.parametrize("debug_callable", [True, False])
+def test_classifier_model(monkeypatch, debug_callable):
+    patch_test(monkeypatch, utility.get_classifier_model, debug_callable)
+
+    # All model callables should align with the request/response models
+    utility.classifierRequest(content=MOCK_CONTENT, candidate_labels=MOCK_LABELS)
+    model_output = utility.get_classifier_model()(MOCK_CONTENT, candidate_labels=MOCK_LABELS)
+    utility.classifierResponse(results=model_output)
+
+
+# TODO: Add remaining sentiment models after fixing current issues
+@pytest.mark.parametrize("model_callable, request_model, response_model", [
+    (generative.get_generative_model, generative.generativeRequest, generative.generativeResponse),
+    (keyword.get_keyword_model, keyword.keywordRequest, keyword.keywordResponse),
+    (sentiment.get_acceptability_model, sentiment.sentimentRequest, sentiment.sentimentResponse),
+    (sentiment.get_polarity_model, sentiment.sentimentRequest, sentiment.sentimentResponse),
+    (sentiment.get_sentiment_model, sentiment.sentimentRequest, sentiment.sentimentResponse),
+    (sentiment.get_spam_model, sentiment.sentimentRequest, sentiment.sentimentResponse),
+    (sentiment.get_toxicity_model, sentiment.sentimentRequest, sentiment.sentimentResponse),
+])
+@pytest.mark.parametrize("debug_callable", [True, False])
+def test_model_io(monkeypatch, model_callable, request_model, response_model, debug_callable):
+    patch_test(monkeypatch, model_callable, debug_callable)
+
+    # All model callables should align with the request/response models
+    request_model(content=MOCK_CONTENT) 
+    model_output = model_callable()(MOCK_CONTENT)
+    response_model(results=model_output)

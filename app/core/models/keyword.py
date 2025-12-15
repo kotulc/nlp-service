@@ -15,7 +15,7 @@ class keywordRequest(BaseModel):
 
 
 class keywordResponse(BaseModel):
-    results: List[Tuple[str, float]] = Field(None, description="The extracted keyword and score pairs")
+    results: List[str] = Field(None, description="The extracted keyword and score pairs")
 
 
 @lru_cache(maxsize=1)
@@ -52,5 +52,5 @@ def get_keyword_model(top_n: int=10):
     return ModelLoader(
         model_key="keybert",
         default_callable=extract_keywords,
-        debug_callable=lambda *args, **kwargs: [("mock keyword", 1.0)]
+        debug_callable=lambda *args, **kwargs: ["keyword1", "keyword2"]
     )
