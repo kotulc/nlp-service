@@ -96,7 +96,7 @@ def get_spam_model():
 
         # Apply softmax to get probabilities
         probabilities = torch.softmax(logits, dim=1)
-        return {'score': probabilities.flatten()[1]}
+        return {'score': probabilities.flatten()[1].item()}
 
     return ModelLoader(
         model_key="spam",

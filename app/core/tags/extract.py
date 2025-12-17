@@ -1,5 +1,5 @@
 from app.core.summary.generate import generate_summary
-from app.core.models.loader import get_document_model
+from app.core.models.utility import get_document_model
 from app.core.models.keyword import get_keyword_model
 from app.core.utils.relevance import maximal_marginal_relevance, semantic_similarity
 from app.core.utils.samples import SAMPLE_TEXT

@@ -1,5 +1,5 @@
-from app.core.models.sentiment import get_polarity_model, get_sentiment_model
-from app.core.models.loader import get_document_model
+from app.core.models.sentiment import get_polarity_model
+from app.core.models.utility import get_document_model
 from app.core.utils.samples import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
 
 
@@ -8,11 +8,11 @@ polarity_model = get_polarity_model()
 doc_model = get_document_model()
 
 
-def content_polarity(content: str) -> dict:
+def score_polarity(content: str) -> dict:
     """Compute blob and vader polarity for the supplied string"""
     # For both sets of scores: -1 most extreme negative, +1 most extreme positive
     doc = doc_model(content)
-    return round(polarity_model(doc.text), 4)
+    return round(polarity_model(doc.text)['score'], 4)
 
 
 def sentence_polarity(content: str) -> list:
@@ -24,16 +24,9 @@ def sentence_polarity(content: str) -> list:
         # For both sets of scores: -1 most extreme negative, +1 most extreme positive
         sentence_text = sentence.text
         sentence_list.append(sentence_text)
-        score_list.append(round(polarity_model(sentence_text), 4))
+        score_list.append(round(polarity_model(sentence_text)['score'], 4))
 
     return sentence_list, score_list
-
-
-def score_polarity(content: str) -> float:
-    """Return the composite (mean) polarity score for the supplied content"""
-    blob_score, vader_score = content_polarity(content)
-    
-    return (blob_score + vader_score) / 2
 
 
 # Example usage and testing function
@@ -46,7 +39,7 @@ def demo_polarity():
     for label, content in zip(content_labels, content_text):
         print(f"\nText: {label}")
         
-        polarity_score = content_polarity(content)
+        polarity_score = score_polarity(content)
         print(f"Content Polarity:", polarity_score)
         
     print("\n== Sentence Polarity ===")

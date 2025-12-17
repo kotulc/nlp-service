@@ -19,13 +19,7 @@ def generate_response(content: str, prompt: str, delimiter: str="Output:", **kwa
     """Generate a content summary string using a specified model and prompt"""
     # Apply the prompt template and generate the summary
     text_prompt = DEFAULT_TEMPLATE.format(prompt=prompt, content=content, delimiter=delimiter)
-    sequences = generator(text_prompt, **kwargs)
-
-    # For each returned text sequence extract the generated content
-    text_sequences = [sequence["generated_text"] for sequence in sequences]
-
-    # Split the result to extract the generated summary after the prompt delimiter
-    return text_sequences
+    return generator(text_prompt, **kwargs)
 
 
 def generate_summary(content: str, prompt: str, format: str=None, tone: str=None, **kwargs) -> list[str]:

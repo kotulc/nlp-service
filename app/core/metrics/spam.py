@@ -11,13 +11,13 @@ toxicity_classifier = get_toxicity_model()
 
 def score_spam(content: str) -> float:
     """Compute spam scores for the supplied text content"""
-    return round(float(spam_classifier(content)), 4)
+    return round(spam_classifier(content)['score'], 4)
 
 
 def score_toxicity(content: str) -> float:
     """Compute toxicity scores for the supplied text content"""
     # Simply apply the toxicity classifier to the input
-    return round(toxicity_classifier(content)[0]['score'], 4)
+    return round(toxicity_classifier(content)['score'], 4)
 
 
 # Example usage and testing function
@@ -30,7 +30,7 @@ def demo_spam():
     print("\n== Spam Classification ===")
     for label, content in zip(content_labels, content_strings):
         # Get predicted labels and map labels to class names
-        score = spam_classifier(content)
+        score = spam_classifier(content)['score']
         label = "Not Spam" if score < 0.5 else "Spam"
         prediction = int(numpy.argmax(score))
         print(f"\n{label.capitalize()} text: {content}\nPrediction: {label}")

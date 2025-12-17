@@ -30,7 +30,7 @@ def classify_content(content: str, labels: list, multi_label=False) -> list:
 def score_diction(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for diction"""
     # Zero-shot diction score (ideally this uses a fine-tuned a model)
-    result = classify_content(content, DICTION_LABELS)
+    result = classifier(content, DICTION_LABELS)
     scores = dict(zip(DICTION_LABELS, [round(float(v), 4) for v in result]))
 
     return scores, DICTION_LABELS[numpy.argmax(result)]
@@ -39,7 +39,7 @@ def score_diction(content: str) -> tuple[(list, str)]:
 def score_genre(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for genre"""
     # Zero-shot genre score (ideally this uses a fine-tuned a model)
-    result = classify_content(content, GENRE_LABELS)
+    result = classifier(content, GENRE_LABELS)
     scores = dict(zip(GENRE_LABELS, [round(float(v), 4) for v in result]))
 
     return scores, GENRE_LABELS[numpy.argmax(result)]
@@ -48,7 +48,7 @@ def score_genre(content: str) -> tuple[(list, str)]:
 def score_mode(content: str) -> tuple[(list, str)]:
     """Return the zero-shot classification scores for style"""
     # Zero-shot style score (ideally this uses a fine-tuned a model)
-    result = classify_content(content, MODE_LABELS)
+    result = classifier(content, MODE_LABELS)
     scores = dict(zip(MODE_LABELS, [round(float(v), 4) for v in result]))
     
     return scores, MODE_LABELS[numpy.argmax(result)]
@@ -68,7 +68,7 @@ def score_tone(content: str) -> tuple[(list, str)]:
     distribution = weights / numpy.sum(weights)
 
     # Zero-shot subjectivity score (ideally this uses a fine-tuned a model)
-    result = classify_content(content, TONE_LABELS)
+    result = classifier(content, TONE_LABELS)
 
     # Combine scores and re-normalize
     result = (result + distribution) / numpy.sum(result + distribution)

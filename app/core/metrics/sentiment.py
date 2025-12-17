@@ -1,10 +1,5 @@
-import numpy
-
-from typing import Dict
-
-from app.core.metrics.style import classify_content
 from app.core.models.sentiment import get_sentiment_model
-from app.core.models.loader import get_document_model
+from app.core.models.utility import get_document_model
 from app.core.utils.samples import SAMPLE_TEXT, NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT
 
 
@@ -16,7 +11,7 @@ sentiment_model = get_sentiment_model()
 doc_model = get_document_model()
 
 
-def content_sentiment(content: str) -> dict:
+def score_sentiment(content: str) -> dict:
     """Compute bart and vader sentiment scores for the supplied string"""
     doc = doc_model(content)
     return sentiment_model(doc.text)
@@ -44,7 +39,7 @@ def demo_sentiment():
 
     for label, content in zip(content_labels, content_text):
         print(f"\nText: {label}")
-        sentiment_score = content_sentiment(content)
+        sentiment_score = score_sentiment(content)
         print(f"Content Sentiment:", sentiment_score)
         
     print("\n== Sentence Sentiment ===")

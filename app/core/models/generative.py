@@ -44,6 +44,7 @@ def get_generative_model():
         else:
             model_kwargs = default_kwargs
 
+        # For each returned text sequence extract the generated content
         sequences = generator(content, do_sample=True, return_full_text=False, **model_kwargs)
         return [sequence["generated_text"] for sequence in sequences]
 

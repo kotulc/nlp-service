@@ -3,7 +3,7 @@ import numpy
 from sklearn.metrics.pairwise import cosine_similarity
 
 from app.core.models.sentiment import get_acceptability_model
-from app.core.models.loader import get_embedding_model
+from app.core.models.utility import get_embedding_model
 
 
 # Load a model fine-tuned on the CoLA dataset for linguistic acceptability scoring
@@ -19,7 +19,7 @@ def composite_scores(content: str, candidates: list[str]) -> tuple:
     candidates = list({s.lower() for s in candidates})
 
     # Calculate linguistic acceptability scores for each candidate
-    linguistic_scores = numpy.array([classifier(candidate)[0]['score'] for candidate in candidates])
+    linguistic_scores = numpy.array([classifier(candidate)['score'] for candidate in candidates])
 
     # Select the candidate with the highest compound (content similarity * linguistic) scores
     content_embedding = embedding_model([content])
