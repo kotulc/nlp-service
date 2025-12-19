@@ -10,9 +10,9 @@ class MetricsResult(BaseModel):
     mode: Dict[str, float] | None = Field(default=None, description="The mode category scores")
     tone: Dict[str, float] | None = Field(default=None, description="The tone category scores")
     sentiment: Dict[str, float] | None = Field(default=None, description="The sentiment category scores")
-    polarity: float | None = Field(default=None, description="The content polarity score")
-    toxicity: float | None = Field(default=None, description="The content toxcity score")
-    spam: float | None = Field(default=None, description="The content spam score")
+    polarity: Dict[str, float] | None = Field(default=None, description="The content polarity score")
+    toxicity: Dict[str, float] | None = Field(default=None, description="The content toxcity score")
+    spam: Dict[str, float] | None = Field(default=None, description="The content spam score")
 
 
 class MetricsResponse(BaseResponse):

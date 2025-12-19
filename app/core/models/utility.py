@@ -39,7 +39,7 @@ def get_classifier_model():
     return ModelLoader(
         model_key="classifier",
         default_callable=score_labels,
-        debug_callable=lambda *args, **kwargs: [1.0, 0.0]
+        debug_callable=lambda content, candidate_labels, **kwargs: [0.0] * len(candidate_labels)
     )
 
 

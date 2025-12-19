@@ -34,9 +34,3 @@ def test_summary_top_n(top_n):
     assert "scores" in results
     assert len(results["summaries"])
     assert len(results["summaries"]) <= top_n
-
-
-if __name__ == "__main__":
-    test_summary()
-    test_summary_type("outline")
-    test_summary_top_n(top_n=5)

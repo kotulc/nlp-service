@@ -26,6 +26,9 @@ def get_metrics(content: str, metrics: list=None) -> dict:
             if metric in ("diction", "genre", "mode", "tone"):
                 # Do not include the resulting label for these metrics
                 results[metric] = metric_function(content)[0]
+            elif metric in ('polarity', 'toxicity', 'spam'):
+                # TODO: Make consistent output format for these metrics
+                results[metric] = {metric: metric_function(content)}
             else:
                 results[metric] = metric_function(content)
 

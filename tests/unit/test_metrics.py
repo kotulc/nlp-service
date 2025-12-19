@@ -34,9 +34,3 @@ def test_metrics_multiple_types(metric_types: list):
         assert metric in results
         assert isinstance(results[metric], dict)
         assert len(results[metric]) > 0
-
-
-if __name__ == "__main__":
-    test_metrics()
-    test_metrics_single_type("diction")
-    test_metrics_multiple_types([m for m in METRIC_TYPES][:2])

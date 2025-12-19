@@ -35,9 +35,3 @@ def test_tags_top_n_limit(top_n):
     )
     assert len(results['tags']) <= top_n
     assert len(results['scores']) == len(results['tags'])
-
-
-if __name__ == "__main__":
-    test_tags()
-    test_tags_min_max(1, 2)
-    test_tags_top_n_limit(5)
