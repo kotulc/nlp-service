@@ -470,5 +470,23 @@ mypy src/
 ```
 
 
+## Validation
+Automated test behavior:
+- Default `pytest` runs exclude manual tests via `-m "not manual"` in `pytest.ini`.
+- Smoke, integration, and unit core tests use mock providers by default for fast, deterministic runs.
+- `tests/integration/core/test_demo_smoke.py` is marked `manual` and only runs when explicitly requested.
+
+Validation commands:
+```bash
+python -m pytest -q
+python -m pytest tests/integration/core/test_demo_smoke.py -m manual -q
+```
+
+CI validation:
+- Workflow: `.github/workflows/ci.yml`
+- Triggers: every `push` and `pull_request`
+- Command: `python -m pytest -q`
+
+
 ## Contributing
 Follow the project conventions in `AGENTS.md` and keep modules simple, focused, and easy to read.

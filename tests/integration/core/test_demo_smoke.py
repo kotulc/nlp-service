@@ -5,6 +5,9 @@ import importlib
 import pytest
 
 
+pytestmark = pytest.mark.manual
+
+
 DEMO_TARGETS = (
     ("mdaug.core.analysis.polarity", "demo_polarity"),
     ("mdaug.core.analysis.sentiment", "demo_sentiment"),

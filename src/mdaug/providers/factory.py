@@ -22,7 +22,6 @@ from mdaug.providers.registry import ProviderRegistry
 @dataclass(frozen=True)
 class ProviderBundle:
     """Concrete provider instances selected by provider settings."""
-
     analysis: AnalysisProvider
     extraction: ExtractionProvider
     generative: GenerativeProvider

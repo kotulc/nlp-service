@@ -106,6 +106,16 @@ def mock_registry() -> ProviderRegistry:
 
 
 @pytest.fixture
+def mock_default_registry(mock_registry: ProviderRegistry) -> ProviderRegistry:
+    """Return a mock registry that also resolves all default provider names."""
+    mock_registry.register("analysis", "default", mock_registry.resolve("analysis", "mock"))
+    mock_registry.register("extraction", "default", mock_registry.resolve("extraction", "mock"))
+    mock_registry.register("generative", "default", mock_registry.resolve("generative", "mock"))
+    mock_registry.register("relevance", "default", mock_registry.resolve("relevance", "mock"))
+    return mock_registry
+
+
+@pytest.fixture
 def mock_bundle() -> ProviderBundle:
     """Return a deterministic mock provider bundle for direct test injection."""
     return ProviderBundle(
