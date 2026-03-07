@@ -1,4 +1,4 @@
-"""Module execution support for `python -m mdaug.cli`."""
+﻿"""Module execution support for `python -m mdaug.cli`."""
 
 from mdaug.cli.app import main
 

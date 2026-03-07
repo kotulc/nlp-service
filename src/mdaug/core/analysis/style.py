@@ -1,4 +1,4 @@
-"""Style-analysis demo helpers backed by configured provider relevance scoring."""
+﻿"""Style-analysis demo helpers backed by configured provider relevance scoring."""
 
 from mdaug.common.sample import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
 from mdaug.providers.factory import get_provider_bundle

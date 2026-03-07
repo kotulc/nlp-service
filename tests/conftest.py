@@ -2,7 +2,7 @@
 
 import pytest
 
-from mdaug.common.provider_config import ProviderSettings
+from mdaug.providers.settings import ProviderSettings
 from mdaug.providers.factory import ProviderBundle
 from mdaug.providers.registry import ProviderRegistry
 

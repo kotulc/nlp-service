@@ -3,18 +3,18 @@
 from dataclasses import dataclass
 from functools import lru_cache
 
-from mdaug.common.provider_config import ProviderSettings, load_provider_settings
-from mdaug.providers.interfaces import (
-    AnalysisProvider,
-    ExtractionProvider,
-    GenerativeProvider,
-    RelevanceProvider,
-)
+from mdaug.providers.settings import ProviderSettings, load_provider_settings
 from mdaug.providers.default.provider import (
     DefaultAnalysisProvider,
     DefaultExtractionProvider,
     DefaultGenerativeProvider,
     DefaultRelevanceProvider,
+)
+from mdaug.providers.interfaces import (
+    AnalysisProvider,
+    ExtractionProvider,
+    GenerativeProvider,
+    RelevanceProvider,
 )
 from mdaug.providers.registry import ProviderRegistry
 

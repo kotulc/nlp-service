@@ -3,6 +3,7 @@
 from math import sqrt
 
 from mdaug.providers.default.models import get_acceptability_model, get_embedding_model
+from mdaug.providers.default.settings import load_settings
 
 
 def _cosine_similarity(vector_a: list[float], vector_b: list[float]) -> float:
@@ -38,16 +39,19 @@ def _pairwise_similarity(vectors: list[list[float]]) -> list[list[float]]:
 
 def composite_scores(content: str, candidates: list[str]) -> tuple[list[str], list[float]]:
     """Score candidates by similarity times linguistic acceptability."""
+    settings = load_settings().relevance.composite
+
     deduped_candidates = list(dict.fromkeys(candidate.strip().lower() for candidate in candidates if candidate))
     if not deduped_candidates:
         return [], []
 
     candidate_list, semantic_scores = semantic_similarity(content, deduped_candidates)
     acceptability_model = get_acceptability_model()
+
     combined = []
     for candidate, semantic_score in zip(candidate_list, semantic_scores):
         acceptability = float(acceptability_model(candidate)["score"])
-        combined.append((candidate, round(acceptability * semantic_score, 4)))
+        combined.append((candidate, round(acceptability * semantic_score, settings.score_precision)))
 
     ranked = sorted(combined, key=lambda item: item[1], reverse=True)
     return [candidate for candidate, _score in ranked], [score for _candidate, score in ranked]
@@ -56,12 +60,16 @@ def composite_scores(content: str, candidates: list[str]) -> tuple[list[str], li
 def maximal_marginal_relevance(
     content: str,
     candidates: list[str],
-    sim_lambda: float = 0.5,
-    top_n: int = 10,
+    sim_lambda: float | None = None,
+    top_n: int | None = None,
     ) -> tuple[list[str], list[float]]:
     """Select candidates balancing query relevance and inter-candidate diversity."""
+    settings = load_settings().relevance.mmr
+    selected_lambda = settings.sim_lambda if sim_lambda is None else sim_lambda
+    selected_top_n = settings.top_n if top_n is None else top_n
+
     deduped_candidates = list(dict.fromkeys(candidate for candidate in candidates if candidate))
-    if not deduped_candidates or top_n <= 0:
+    if not deduped_candidates or selected_top_n <= 0:
         return [], []
 
     encode = get_embedding_model()
@@ -74,7 +82,7 @@ def maximal_marginal_relevance(
     selected_indices = []
     selected_scores = []
 
-    while available_indices and len(selected_indices) < top_n:
+    while available_indices and len(selected_indices) < selected_top_n:
         best_index = None
         best_score = None
         for index in available_indices:
@@ -83,7 +91,7 @@ def maximal_marginal_relevance(
                 mmr_score = relevance
             else:
                 max_novelty_penalty = max(novelty_matrix[index][selected] for selected in selected_indices)
-                mmr_score = (sim_lambda * relevance) - ((1 - sim_lambda) * max_novelty_penalty)
+                mmr_score = (selected_lambda * relevance) - ((1 - selected_lambda) * max_novelty_penalty)
 
             if best_score is None or mmr_score > best_score:
                 best_score = mmr_score
@@ -93,7 +101,7 @@ def maximal_marginal_relevance(
             break
 
         selected_indices.append(best_index)
-        selected_scores.append(round(float(best_score), 4))
+        selected_scores.append(round(float(best_score), settings.score_precision))
         available_indices.remove(best_index)
 
     return (
@@ -104,6 +112,8 @@ def maximal_marginal_relevance(
 
 def semantic_similarity(content: str, candidates: list[str]) -> tuple[list[str], list[float]]:
     """Rank candidates by semantic similarity to content embeddings."""
+    settings = load_settings().relevance.semantic
+
     deduped_candidates = list(dict.fromkeys(candidate for candidate in candidates if candidate))
     if not deduped_candidates:
         return [], []
@@ -112,9 +122,10 @@ def semantic_similarity(content: str, candidates: list[str]) -> tuple[list[str],
     embeddings = _to_vectors(encode([content] + deduped_candidates))
     content_vector = embeddings[0]
     candidate_vectors = embeddings[1:]
+
     paired_scores = []
     for candidate, vector in zip(deduped_candidates, candidate_vectors):
-        paired_scores.append((candidate, round(_cosine_similarity(content_vector, vector), 4)))
+        paired_scores.append((candidate, round(_cosine_similarity(content_vector, vector), settings.score_precision)))
 
     ranked = sorted(paired_scores, key=lambda item: item[1], reverse=True)
     return [candidate for candidate, _score in ranked], [score for _candidate, score in ranked]

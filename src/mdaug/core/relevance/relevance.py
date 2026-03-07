@@ -1,4 +1,4 @@
-"""Relevance demo helpers delegated to configured default provider relevance utilities."""
+﻿"""Relevance demo helpers delegated to configured default provider relevance utilities."""
 
 from mdaug.providers.default.relevance import (
     composite_scores as _composite_scores,

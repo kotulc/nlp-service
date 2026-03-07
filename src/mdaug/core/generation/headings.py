@@ -1,4 +1,4 @@
-"""Heading and outline demo helpers backed by refactored providers."""
+﻿"""Heading and outline demo helpers backed by refactored providers."""
 
 from mdaug.common.sample import SAMPLE_TEXT
 from mdaug.providers.default.models import get_document_model

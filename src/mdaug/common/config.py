@@ -1,14 +1,38 @@
-﻿"""Common configuration entrypoints for runtime settings."""
+"""Compatibility re-exports for legacy config imports."""
 
-from functools import lru_cache
-from pathlib import Path
+from mdaug.providers.settings import (
+    ProviderConfigEntry,
+    ProviderRuntimeConfig,
+    ProviderSettings,
+    clear_config_cache,
+    clear_provider_settings_cache,
+    get_provider_settings,
+    load_default_provider_settings,
+    load_provider_settings,
+    load_provider_settings_data,
+)
+from mdaug.service.settings import (
+    clear_runtime_settings_cache,
+    load_runtime_settings,
+    load_runtime_settings_with_path,
+)
 
-from mdaug.common.provider_config import ProviderSettings, load_provider_settings
+RuntimeConfig = ProviderRuntimeConfig
+load_runtime_config = load_runtime_settings
 
-
-@lru_cache(maxsize=1)
-def get_provider_settings(
-    config_path: str | Path | None = None,
-    ) -> ProviderSettings:
-    """Load cached provider settings from config.yaml or defaults."""
-    return load_provider_settings(config_path=config_path)
+__all__ = [
+    "ProviderConfigEntry",
+    "RuntimeConfig",
+    "ProviderRuntimeConfig",
+    "ProviderSettings",
+    "clear_config_cache",
+    "clear_provider_settings_cache",
+    "clear_runtime_settings_cache",
+    "get_provider_settings",
+    "load_default_provider_settings",
+    "load_provider_settings",
+    "load_provider_settings_data",
+    "load_runtime_config",
+    "load_runtime_settings",
+    "load_runtime_settings_with_path",
+]

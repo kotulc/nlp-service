@@ -1,4 +1,4 @@
-"""Provider interfaces and registry for backend selection."""
+﻿"""Provider interfaces and registry for backend selection."""
 
 from mdaug.providers.factory import (
     ProviderBundle,

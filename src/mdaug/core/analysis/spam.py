@@ -1,4 +1,4 @@
-"""Spam and toxicity demo helpers backed by refactored providers."""
+﻿"""Spam and toxicity demo helpers backed by refactored providers."""
 
 from mdaug.common.sample import (
     HAM_TEXT,

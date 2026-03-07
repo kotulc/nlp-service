@@ -1,0 +1,95 @@
+﻿models:
+  acceptability:
+    model_name: textattack/roberta-base-CoLA
+
+  document:
+    model_names:
+      - en_core_web_lg
+      - en_core_web_sm
+
+  embedding:
+    model_name: all-MiniLM-L6-v2
+
+  generative:
+    model_name: sshleifer/tiny-gpt2
+    kwargs:
+      max_new_tokens: 96
+      num_return_sequences: 3
+      temperature: 0.7
+      top_p: 0.9
+      do_sample: true
+
+  keyword:
+    embedding_model_name: all-MiniLM-L6-v2
+    default_top_n: 10
+    keyphrase_ngram_min: 1
+    keyphrase_ngram_max: 1
+    stop_words: english
+    use_mmr: false
+    yake_language: en
+    yake_ngram_size: 1
+    yake_dedup_limit: 0.9
+    yake_dedup_func: seqm
+
+  polarity: {}
+
+  sentiment: {}
+
+  spam:
+    model_name: AntiSpamInstitute/spam-detector-bert-MoE-v2.2
+    default_spam_index: 1
+
+  toxicity:
+    model_name: unitary/toxic-bert
+    top_k: null
+
+provider:
+  analysis:
+    round_digits: 4
+
+  extraction:
+    keyword_top_n: 10
+    entity_limit: 5
+    keyword_limit: 10
+
+  generative:
+    default_template: "{prompt}:\n\nText: {content}\n\n{delimiter}"
+    delimiter:
+      outline: "<|outline|>:"
+      tag: "<|tag|>:"
+      default: "Output:"
+    prompts:
+      outline:
+        - In as few words as possible, outline the following text
+        - List concise bullet-like points describing the key ideas of the following text
+      summarize:
+        - Provide a brief summary of the following text
+        - List several concise 2-8 word summaries for the following text
+      tag:
+        - With as few words as possible, list high-level topics from the following text
+        - With as few words as possible, list related concepts from the following text
+      title:
+        - In 5 words or less, list concise and engaging titles for the following text
+        - List short headline-style alternatives for the following text
+    candidate_min_chars: 2
+    result_limit: 10
+    word_limits:
+      tag_min: 1
+      tag_max: 3
+      title_max: 8
+      summarize_max: 18
+    parse_patterns:
+      default: '[.,:;<>\[\]`|\n]'
+      outline_tag: '[.,:;<>\[\]`|\n*-]|\*\*|--|---'
+
+relevance:
+  composite:
+    score_precision: 4
+
+  semantic:
+    score_precision: 4
+
+  mmr:
+    sim_lambda: 0.5
+    top_n: 10
+    score_precision: 4

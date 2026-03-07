@@ -1,11 +1,10 @@
-"""Simple provider registry used during early refactor phases."""
+﻿"""Simple provider registry used during early refactor phases."""
 
 from collections.abc import Callable
 
 
 class ProviderRegistry:
     """Store provider factories keyed by role and provider name."""
-
     def __init__(self) -> None:
         self._factories: dict[str, dict[str, Callable]] = {}
 

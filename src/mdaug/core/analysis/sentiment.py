@@ -1,4 +1,4 @@
-"""Sentiment scoring demo helpers backed by refactored providers."""
+﻿"""Sentiment scoring demo helpers backed by refactored providers."""
 
 from mdaug.common.sample import NEGATIVE_TEXT, NEUTRAL_TEXT, POSITIVE_TEXT, SAMPLE_TEXT
 from mdaug.providers.default.models import get_document_model

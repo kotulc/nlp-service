@@ -13,7 +13,6 @@ GroupShape = Literal["list", "dict"]
 @dataclass(frozen=True)
 class RequestGroup:
     """A normalized request group with either list or dict item storage."""
-
     shape: GroupShape
     items: list[str] | dict[str, str]
 
@@ -28,7 +27,6 @@ class RequestGroup:
 @dataclass(frozen=True)
 class NormalizedRequest:
     """Normalized request representation with top-level shape metadata."""
-
     shape: RequestShape
     groups: list[RequestGroup]
     group_ids: list[str] | None = None

@@ -1,4 +1,4 @@
-"""CLI entrypoint with normalized JSON input and output contract handling."""
+﻿"""CLI entrypoint with normalized JSON input and output contract handling."""
 
 import argparse
 import json

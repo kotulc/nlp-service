@@ -1,4 +1,4 @@
-"""Definitions for supported CLI commands."""
+﻿"""Definitions for supported CLI commands."""
 
 COMMANDS = (
     "analyze",

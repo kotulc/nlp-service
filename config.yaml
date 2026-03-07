@@ -3,3 +3,7 @@ providers:
   extraction: default
   generative: default
   relevance: default
+
+provider_configs:
+  default:
+    source: src/mdaug/providers/default/config.yaml

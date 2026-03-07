@@ -1,9 +1,8 @@
-"""Validation errors for schema and request normalization."""
+﻿"""Validation errors for schema and request normalization."""
 
 
 class RequestValidationError(ValueError):
     """Raised when a CLI request payload fails validation."""
-
     def __init__(self, code: str, message: str):
         super().__init__(message)
         self.code = code

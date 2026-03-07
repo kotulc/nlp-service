@@ -1,4 +1,4 @@
-# Define a generic sample document
+﻿# Define a generic sample document
 SAMPLE_TEXT = """
 Artificial intelligence (AI) is intelligence demonstrated by machines, in contrast to 
 natural intelligence displayed by animals including humans. Leading AI textbooks define 

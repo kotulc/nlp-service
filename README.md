@@ -43,12 +43,23 @@ Each command takes input in the same shape (defined below) and returns results b
 
 
 ## Configuration
-Provider backend selection is configured in `config.yaml` only.
-Place a `config.yaml` in your working directory to set application-wide defaults.
+Configuration is loaded with this precedence:
+- root config: `config.yaml` (or CLI `--config`)
+- provider source file(s): from `provider_configs.<provider>.source`
+- inline provider overrides: `provider_configs.<provider>.settings`
+- environment override: `MDAUG_*`
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `transformers` | `None` | configuration settings for the `Transformers` library |
+Top-level sections:
+- `providers`: provider selection names for each role.
+- `provider_configs`: provider-specific config sources and inline overrides keyed by provider name.
+- `provider_configs.<name>.settings.models`: model names and model-level parameters.
+- `provider_configs.<name>.settings.provider`: module-level runtime settings.
+- `provider_configs.<name>.settings.relevance`: scoring precision and MMR defaults.
+
+Environment variable overrides use `__` for nested keys. Example:
+```bash
+MDAUG_PROVIDER_CONFIGS__DEFAULT__SETTINGS__MODELS__GENERATIVE__KWARGS__MAX_NEW_TOKENS=128
+```
 
 ### Provider Backends
 - `default` (default): model-backed providers for analysis, extraction, generation, and relevance.
@@ -352,7 +363,7 @@ The general flow of dependency is `cli -> service -> core -> providers`:
 nlp-mdaug/
   src/mdaug/        # Main package source
     cli/            # Command-line interface
-    common/         # Configuration and shared utilities
+    common/         # Shared compatibility utilities
     core/           # Operational logic
     providers/      # Provider adapter layer
     service/        # Runtime and orchestration
@@ -380,8 +391,24 @@ The common package simply contains shared modules and utilities leveraged throug
 
 ```
 common/
-  provider_config.py  # Provider selection loading (config/default)
-  config.py           # Shared configuration entrypoints
+  config.py           # Backward-compatible config import aliases
+```
+
+### providers
+Provider selection config and provider-specific settings resolution live with provider code.
+
+```
+providers/
+  settings.py         # Provider selection + provider-config loading
+```
+
+### service
+Runtime/root config loading and env merge behavior live with runtime orchestration.
+
+```
+service/
+  runtime.py          # Command runtime orchestration
+  settings.py         # Root config loading + env override merge
 ```
 
 

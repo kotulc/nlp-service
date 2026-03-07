@@ -1,4 +1,4 @@
-"""Provider-backed operation execution aligned with CLI output contracts."""
+﻿"""Provider-backed operation execution aligned with CLI output contracts."""
 
 from mdaug.providers.factory import ProviderBundle
 from mdaug.schemas.io import RequestGroup
