@@ -25,3 +25,9 @@ def test_no_legacy_imports_in_provider_runtime_modules():
 def test_relevance_module_imports_without_legacy_model_paths():
     """Relevance helper module imports without requiring removed legacy packages."""
     importlib.import_module("mdaug.core.relevance.relevance")
+
+
+def test_core_relevance_module_is_not_implemented_in_default_provider_layer():
+    """Core relevance implementation does not import default provider relevance module."""
+    text = Path("src/mdaug/core/relevance/relevance.py").read_text(encoding="utf-8")
+    assert "mdaug.providers.default.relevance" not in text
