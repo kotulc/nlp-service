@@ -45,7 +45,8 @@ Each command takes input in the same shape (defined below) and returns results b
 ## Configuration
 Configuration is loaded with this precedence:
 - root config: `config.yaml` (or CLI `--config`)
-- provider source file(s): from `provider_configs.<provider>.source`
+- provider source file(s): from `provider_configs.<provider>.source` when configured
+- provider package default source: `src/mdaug/providers/<provider>/config.yaml` fallback
 - inline provider overrides: `provider_configs.<provider>.settings`
 - environment override: `MDAUG_*`
 
@@ -63,6 +64,7 @@ MDAUG_PROVIDER_CONFIGS__DEFAULT__SETTINGS__MODELS__GENERATIVE__KWARGS__MAX_NEW_T
 
 ### Provider Backends
 - `default` (default): model-backed providers for analysis, extraction, generation, and relevance.
+- `ollama` (optional): Ollama-backed generative provider.
 Test-only mock providers live under `tests/` and are not registered in production runtime.
 
 
@@ -363,7 +365,7 @@ The general flow of dependency is `cli -> service -> core -> providers`:
 nlp-mdaug/
   src/mdaug/        # Main package source
     cli/            # Command-line interface
-    common/         # Shared compatibility utilities
+    common/         # Shared sample content and simple helpers
     core/           # Operational logic
     providers/      # Provider adapter layer
     service/        # Runtime and orchestration
@@ -391,7 +393,7 @@ The common package simply contains shared modules and utilities leveraged throug
 
 ```
 common/
-  config.py           # Backward-compatible config import aliases
+  sample.py           # Sample text content used by demos
 ```
 
 ### providers

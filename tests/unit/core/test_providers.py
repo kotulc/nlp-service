@@ -6,11 +6,11 @@ import pytest
 
 from mdaug.providers.settings import (
     ProviderSettings,
-    clear_config_cache,
-    load_default_provider_settings,
+    clear_provider_settings_cache,
     load_provider_settings_data,
     load_provider_settings,
 )
+from mdaug.providers.ollama.provider import OllamaGenerativeProvider
 from mdaug.providers.default.settings import load_settings
 from mdaug.providers.factory import build_default_registry, create_provider_bundle
 from mdaug.providers.registry import ProviderRegistry
@@ -97,16 +97,16 @@ def test_load_provider_settings_falls_back_to_defaults_when_missing_config(tmp_p
     assert settings == ProviderSettings()
 
 
-def test_load_default_provider_settings_includes_model_and_provider_defaults():
+def test_load_provider_settings_data_default_includes_model_and_provider_defaults():
     """Default provider settings expose model and provider module defaults."""
-    settings = load_default_provider_settings()
+    settings = load_provider_settings_data("default")
 
     assert settings["models"]["generative"]["model_name"] == "sshleifer/tiny-gpt2"
     assert settings["models"]["generative"]["kwargs"]["max_new_tokens"] == 96
     assert settings["relevance"]["mmr"]["top_n"] == 10
 
 
-def test_load_default_provider_settings_reads_config_overrides(tmp_path: Path):
+def test_load_provider_settings_data_default_reads_config_overrides(tmp_path: Path):
     """Local config.yaml can override nested default provider model settings."""
     provider_config_path = tmp_path / "provider.yaml"
     provider_config_path.write_text(
@@ -140,24 +140,24 @@ def test_load_default_provider_settings_reads_config_overrides(tmp_path: Path):
         encoding="utf-8",
     )
 
-    settings = load_default_provider_settings(config_path=config_path)
+    settings = load_provider_settings_data("default", config_path=config_path)
 
     assert settings["models"]["generative"]["model_name"] == "custom-model"
     assert settings["models"]["generative"]["kwargs"]["max_new_tokens"] == 128
 
 
-def test_load_default_provider_settings_reads_env_overrides(monkeypatch):
+def test_load_provider_settings_data_default_reads_env_overrides(monkeypatch):
     """Environment overrides merge into nested default provider settings."""
     monkeypatch.setenv(
         "MDAUG_PROVIDER_CONFIGS__DEFAULT__SETTINGS__MODELS__GENERATIVE__KWARGS__MAX_NEW_TOKENS",
         "144",
     )
 
-    clear_config_cache()
+    clear_provider_settings_cache()
     try:
-        settings = load_default_provider_settings()
+        settings = load_provider_settings_data("default")
     finally:
-        clear_config_cache()
+        clear_provider_settings_cache()
 
     assert settings["models"]["generative"]["kwargs"]["max_new_tokens"] == 144
 
@@ -173,11 +173,11 @@ def test_default_provider_settings_model_parses_typed_values(monkeypatch):
         "0.7",
     )
 
-    clear_config_cache()
+    clear_provider_settings_cache()
     try:
         settings = load_settings()
     finally:
-        clear_config_cache()
+        clear_provider_settings_cache()
 
     assert settings.provider.analysis.round_digits == 3
     assert settings.relevance.mmr.sim_lambda == 0.7
@@ -203,7 +203,7 @@ def test_create_provider_bundle_unknown_provider_raises():
 
 
 def test_build_default_registry_includes_default_provider_names():
-    """Default registry exposes only default provider names for each role."""
+    """Default registry always exposes default provider names for each role."""
     registry = build_default_registry()
 
     assert registry.resolve("analysis", "default")
@@ -215,7 +215,56 @@ def test_build_default_registry_includes_default_provider_names():
         registry.resolve("analysis", "mock")
 
 
+def test_build_default_registry_auto_registers_ollama_generative_provider():
+    """Provider registry auto-registers ollama package for supported generative role."""
+    registry = build_default_registry()
+    factory = registry.resolve("generative", "ollama")
+    provider = factory()
+
+    assert isinstance(provider, OllamaGenerativeProvider)
+
+
+def test_build_default_registry_limits_ollama_to_supported_roles():
+    """Provider registry does not register unsupported ollama roles."""
+    registry = build_default_registry()
+
+    with pytest.raises(KeyError):
+        registry.resolve("analysis", "ollama")
+
+
 def test_load_provider_settings_data_unknown_provider_name():
     """Unknown provider names resolve to an empty settings mapping."""
     settings = load_provider_settings_data("missing")
     assert settings == {}
+
+
+def test_load_provider_settings_data_uses_provider_package_default_source():
+    """Provider settings load from provider package config when source is not configured."""
+    settings = load_provider_settings_data("ollama")
+
+    assert settings["model"] == "llama3.2"
+    assert settings["base_url"] == "http://127.0.0.1:11434"
+
+
+def test_load_provider_settings_data_merges_inline_overrides_over_package_defaults(tmp_path: Path):
+    """Inline overrides merge over package config defaults when source is omitted."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "provider_configs:",
+                "  ollama:",
+                "    settings:",
+                "      model: custom-model",
+                "      request_options:",
+                "        temperature: 0.2",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    settings = load_provider_settings_data("ollama", config_path=config_path)
+
+    assert settings["model"] == "custom-model"
+    assert settings["base_url"] == "http://127.0.0.1:11434"
+    assert settings["request_options"]["temperature"] == 0.2

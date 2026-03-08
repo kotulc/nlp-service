@@ -1,0 +1,44 @@
+base_url: http://127.0.0.1:11434
+model: llama3.2
+generate_path: /api/generate
+timeout_seconds: 60
+
+request_options:
+  temperature: 0.7
+  top_p: 0.9
+  num_predict: 96
+
+default_template: "{prompt}:\n\nText: {content}\n\n{delimiter}"
+
+delimiter:
+  outline: "<|outline|>:"
+  tag: "<|tag|>:"
+  default: "Output:"
+
+prompts:
+  outline:
+    - In as few words as possible, outline the following text
+    - List concise bullet-like points describing the key ideas of the following text
+  summarize:
+    - Provide a brief summary of the following text
+    - List several concise 2-8 word summaries for the following text
+  tag:
+    - With as few words as possible, list high-level topics from the following text
+    - With as few words as possible, list related concepts from the following text
+  title:
+    - In 5 words or less, list concise and engaging titles for the following text
+    - List short headline-style alternatives for the following text
+
+candidate_min_chars: 2
+result_limit: 10
+score_precision: 4
+
+word_limits:
+  tag_min: 1
+  tag_max: 3
+  title_max: 8
+  summarize_max: 18
+
+parse_patterns:
+  default: '[.,:;<>\[\]`|\n]'
+  outline_tag: '[.,:;<>\[\]`|\n*-]|\*\*|--|---'

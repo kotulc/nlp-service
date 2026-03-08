@@ -1,7 +1,6 @@
 """Provider selection and provider-specific settings loading."""
 
 from copy import deepcopy
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -51,15 +50,18 @@ class ProviderRuntimeConfig(ProviderSettingsModel):
     provider_configs: dict[str, ProviderConfigEntry] = Field(default_factory=dict)
 
 
+def _default_provider_source_path(provider_name: str) -> Path | None:
+    """Resolve package-local provider config file path when it exists."""
+    provider_source = Path(__file__).resolve().parent / provider_name / "config.yaml"
+    if provider_source.exists():
+        return provider_source
+
+    return None
+
+
 def clear_provider_settings_cache() -> None:
     """Clear provider and runtime settings caches."""
     clear_runtime_settings_cache()
-    get_provider_settings.cache_clear()
-
-
-def clear_config_cache() -> None:
-    """Backward-compatible alias for clearing provider settings cache."""
-    clear_provider_settings_cache()
 
 
 def load_provider_settings(config_path: str | Path | None = None) -> ProviderSettings:
@@ -67,12 +69,6 @@ def load_provider_settings(config_path: str | Path | None = None) -> ProviderSet
     runtime_settings = load_runtime_settings(config_path=config_path)
     settings = ProviderRuntimeConfig.model_validate(runtime_settings)
     return settings.providers.model_copy(deep=True)
-
-
-@lru_cache(maxsize=16)
-def get_provider_settings(config_path: str | Path | None = None) -> ProviderSettings:
-    """Load cached provider settings from root config and env values."""
-    return load_provider_settings(config_path=config_path)
 
 
 def load_provider_settings_data(
@@ -85,19 +81,19 @@ def load_provider_settings_data(
 
     runtime_settings, root_config_path = load_runtime_settings_with_path(config_path=config_path)
     settings = ProviderRuntimeConfig.model_validate(runtime_settings)
-    provider_config = settings.provider_configs.get(provider_name.strip())
-    if provider_config is None:
-        return {}
+    selected_name = provider_name.strip()
+    provider_config = settings.provider_configs.get(selected_name)
 
     source_values: dict[str, Any] = {}
-    if provider_config.source:
+    source_path: Path | None = None
+    if provider_config is not None and provider_config.source:
         source_path = resolve_settings_source_path(provider_config.source, root_config_path)
+    else:
+        source_path = _default_provider_source_path(selected_name)
+
+    if source_path is not None:
         source_values = read_settings_map(source_path)
 
-    inline_values = deepcopy(provider_config.settings)
+    inline_values = deepcopy(provider_config.settings) if provider_config is not None else {}
     return deep_merge(source_values, inline_values)
 
-
-def load_default_provider_settings(config_path: str | Path | None = None) -> dict[str, Any]:
-    """Load default provider settings from provider_configs.default."""
-    return load_provider_settings_data("default", config_path=config_path)

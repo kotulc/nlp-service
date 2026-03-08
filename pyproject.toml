@@ -31,3 +31,4 @@ include = ["mdaug*"]
 
 [tool.setuptools.package-data]
 "mdaug.providers.default" = ["config.yaml"]
+"mdaug.providers.ollama" = ["config.yaml"]
